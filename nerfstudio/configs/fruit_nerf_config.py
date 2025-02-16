@@ -17,10 +17,8 @@ from nerfstudio.engine.trainer import TrainerConfig
 from nerfstudio.plugins.types import MethodSpecification
 
 # FruitNerf
-from fruit_nerf.fruit_pipeline import FruitPipeline, FruitPipelineConfig
-from fruit_nerf.fruit_nerf import FruitNerfModelConfig  # , FruitNerfMLPModelConfig
+from nerfstudio.pipelines.fruit_pipeline import FruitPipeline, FruitPipelineConfig
 from nerfstudio.models.fruit_nerf import FruitNerfModelConfig  # , FruitNerfMLPModelConfig
-
 
 from nerfstudio.data.datasets.fruit_dataset import FruitDataset
 from nerfstudio.data.dataparsers.fruitnerf_dataparser import FruitNerfDataParserConfig
