@@ -27,8 +27,8 @@ from nerfstudio.data.pixel_samplers import (
 
 from nerfstudio.data.datamanagers.base_datamanager import VanillaDataManager, VanillaDataManagerConfig
 
-from fruit_nerf.components.ray_generators import OrthographicRayGenerator
-from fruit_nerf.data.fruit_dataset import FruitDataset
+from nerfstudio.model_components.orthographic_ray_generators import OrthographicRayGenerator
+from nerfstudio.data.datasets.fruit_dataset import FruitDataset
 
 
 @dataclass
