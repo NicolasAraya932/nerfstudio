@@ -19,9 +19,12 @@ from nerfstudio.plugins.types import MethodSpecification
 # FruitNerf
 from fruit_nerf.fruit_pipeline import FruitPipeline, FruitPipelineConfig
 from fruit_nerf.fruit_nerf import FruitNerfModelConfig  # , FruitNerfMLPModelConfig
-from fruit_nerf.data.fruit_dataset import FruitDataset
-from fruit_nerf.data.fruitnerf_dataparser import FruitNerfDataParserConfig
-from fruit_nerf.data.fruit_datamanager import FruitDataManager, FruitDataManagerConfig
+from nerfstudio.models.fruit_nerf import FruitNerfModelConfig  # , FruitNerfMLPModelConfig
+
+
+from nerfstudio.data.datasets.fruit_dataset import FruitDataset
+from nerfstudio.data.dataparsers.fruitnerf_dataparser import FruitNerfDataParserConfig
+from nerfstudio.data.datamanagers.fruit_datamanager import FruitDataManager, FruitDataManagerConfig
 
 # FruitNerf
 fruit_nerf_method = MethodSpecification(
