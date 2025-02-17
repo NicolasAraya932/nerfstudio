@@ -167,6 +167,9 @@ class FruitField(Field):
             implementation=implementation,
         )
 
+    """
+    Forward pass of Density Field defined as get_density() in all methods
+    """
     def get_density(self, ray_samples: RaySamples) -> Tuple[Tensor, Tensor]:
         """Computes and returns the densities."""
         if self.spatial_distortion is not None:
