@@ -171,7 +171,13 @@ class FruitField(Field):
     Forward pass of Density Field defined as get_density() in all methods
     """
     def get_density(self, ray_samples: RaySamples) -> Tuple[Tensor, Tensor]:
-        """Computes and returns the densities."""
+        """
+        Density is the first MLP used.
+        Computes and returns the densities.
+        
+        return density, base_mlp_out which is the additional geometric features
+        used for color prediction.
+        """
         if self.spatial_distortion is not None:
             positions = ray_samples.frustums.get_positions()
             positions = self.spatial_distortion(positions)
@@ -244,9 +250,13 @@ class FruitField(Field):
         outputs = {}
         if ray_samples.camera_indices is None:
             raise AttributeError("Camera indices are not provided.")
+
+        # removes dimensions of size 1 from a tensor.
         camera_indices = ray_samples.camera_indices.squeeze()
+        # normalize the directions to a global scalar state
         directions = get_normalized_directions(ray_samples.frustums.directions)
         directions_flat = directions.view(-1, 3)
+        # This with the SHEncoding
         d = self.direction_encoding(directions_flat)
 
         outputs_shape = ray_samples.frustums.directions.shape[:-1]
