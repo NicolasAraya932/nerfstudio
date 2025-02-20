@@ -21,7 +21,7 @@ from nerfstudio.process_data.colmap_converter_to_nerfstudio_dataset import (
     ColmapConverterToNerfstudioDataset,
 )
 from nerfstudio.utils.rich_utils import CONSOLE
-from segmentation.grounded_sam.GroundingDINO.groundingdino.util.inference import Model
+from utils.segmentation.grounded_sam.GroundingDINO.groundingdino.util.inference import Model
 from segment_anything_hq import sam_model_registry, SamPredictor
 
 import os
@@ -52,7 +52,7 @@ class GroundedSAM(BaseImageSegmentation):
     def __init__(self, device='cpu', debug=False):
         super().__init__(device=device, debug=debug)
 
-        import segmentation
+        from utils import segmentation
         weights_base_path = Path(segmentation.__path__[0])
 
         self.model_config_path = weights_base_path / 'grounded_sam/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py'
