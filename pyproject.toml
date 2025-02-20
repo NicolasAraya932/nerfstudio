@@ -131,11 +131,6 @@ docs = [
     "sphinxext-opengraph==0.6.3"
 ]
 
-[project.entry-points.'nerfstudio.method_configs']
-fruit_nerf = 'fruit_nerf.fruit_nerf_config:fruit_nerf_method'
-fruit_nerf_big = 'fruit_nerf.fruit_nerf_config:fruit_nerf_method_big'
-fruit_nerf_huge = 'fruit_nerf.fruit_nerf_config:fruit_nerf_method_huge'
-
 [project.scripts]
 # Note, add entrypoint name to nerfstudio/scripts/completions/install.py to include CLI completion
 ns-install-cli = "nerfstudio.scripts.completions.install:entrypoint"
@@ -148,8 +143,9 @@ ns-render = "nerfstudio.scripts.render:entrypoint"
 ns-export = "nerfstudio.scripts.exporter:entrypoint"
 ns-dev-test = "nerfstudio.scripts.github.run_actions:entrypoint"
 ns-dev-sync-viser-message-defs = "nerfstudio.scripts.viewer.sync_viser_message_defs:entrypoint"
-ns-export-semantics = "fruit_nerf.scripts.exporter:entrypoint"
-ns-process-fruit-data = "fruit_nerf.scripts.process_data:entrypoint"
+# TODO: Make this compatible
+# ns-export-semantics = "nerfstudio.scripts.exporter:entrypoint"
+# ns-process-fruit-data = "nerfstudio.scripts.process_data:entrypoint"
 
 [tool.setuptools.packages.find]
 include = ["nerfstudio*"]
