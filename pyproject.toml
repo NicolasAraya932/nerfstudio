@@ -55,6 +55,8 @@ dependencies = [
     "rich>=12.5.1",
     "robust_laplacian==0.2.7",
     "scikit-image>=0.19.3",
+    "segment_anything",
+    "segment-anything-hq",
     "splines==0.3.0",
     "supervision==0.18",
     "tensorboard>=2.13.0",
