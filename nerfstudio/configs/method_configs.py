@@ -63,7 +63,11 @@ from nerfstudio.models.vanilla_nerf import NeRFModel, VanillaModelConfig
 from nerfstudio.models.fruit_nerf import FruitNerfModelConfig
 from nerfstudio.pipelines.base_pipeline import VanillaPipelineConfig
 from nerfstudio.pipelines.dynamic_batch import DynamicBatchPipelineConfig
+from nerfstudio.pipelines.fruit_pipeline import FruitPipeline, FruitPipelineConfig
+from nerfstudio.data.datamanagers.fruit_datamanager import FruitDataManager, FruitDataManagerConfig
+from nerfstudio.data.dataparsers.fruitnerf_dataparser import FruitNerfDataParserConfig
 from nerfstudio.plugins.registry import discover_methods
+
 
 method_configs: Dict[str, Union[TrainerConfig, ExternalMethodDummyTrainerConfig]] = {}
 descriptions = {
@@ -83,8 +87,41 @@ descriptions = {
     "neus-facto": "Implementation of NeuS-Facto. (slow)",
     "splatfacto": "Gaussian Splatting model",
     "splatfacto-big": "Larger version of Splatfacto with higher quality.",
-    "fruit_nerf" : "Fruit NeRF for fruit detection and counting",
+    "fruit_nerf" : "Base config for FruitNeRF",
 }
+
+method_configs["fruit_nerf"] = TrainerConfig(
+    method_name="fruit_nerf",
+    steps_per_eval_batch=500,
+    steps_per_save=2000,
+    max_num_iterations=30000,
+    mixed_precision=True,
+    pipeline=FruitPipelineConfig(
+        datamanager=FruitDataManagerConfig(
+            dataparser=FruitNerfDataParserConfig(),
+            train_num_rays_per_batch=4096,
+            eval_num_rays_per_batch=4096,
+            camera_optimizer=CameraOptimizerConfig(
+                mode="SO3xR3",
+                optimizer=AdamOptimizerConfig(lr=6e-4, eps=1e-8, weight_decay=1e-2),
+                scheduler=ExponentialDecaySchedulerConfig(lr_final=6e-6, max_steps=200000),
+            )
+        ),
+        model=FruitNerfModelConfig(eval_num_rays_per_chunk=1 << 15),
+    ),
+    optimizers={
+        "proposal_networks": {
+            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+        },
+        "fields": {
+            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+        },
+    },
+    viewer=ViewerConfig(num_rays_per_chunk=1 << 13),
+    vis="viewer"
+)
 
 method_configs["nerfacto"] = TrainerConfig(
     method_name="nerfacto",
