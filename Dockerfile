@@ -10,7 +10,7 @@ FROM scratch as source_copy
 ONBUILD COPY . /tmp/nerfstudio
 FROM alpine/git as source_no_copy
 ARG NERFSTUDIO_VERSION
-ONBUILD RUN git clone --branch ${NERFSTUDIO_VERSION} --recursive https://github.com/nerfstudio-project/nerfstudio.git /tmp/nerfstudio
+ONBUILD RUN git clone --branch ${NERFSTUDIO_VERSION} --recursive https://github.com/NicolasAraya932/nerfstudio.git /tmp/nerfstudio
 ARG NERFSTUDIO_VERSION
 FROM source_${NERFSTUDIO_VERSION:+no_}copy as source
 
