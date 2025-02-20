@@ -43,7 +43,6 @@ from nerfstudio.data.dataparsers.base_dataparser import Semantics
 from nerfstudio.models.nerfacto import NerfactoModelConfig
 from nerfstudio.field_components.encodings import NeRFEncoding
 
-# TODO: FruitNERF
 from nerfstudio.fields.fruit_field import FruitField, SemanticNeRFField
 from nerfstudio.model_components.uniform_sampler_with_noise import UniformSamplerWithNoise
 
