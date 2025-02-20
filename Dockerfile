@@ -86,8 +86,7 @@ RUN pip install --no-cache-dir --upgrade pip 'setuptools<70.0.0' && \
     git clone --branch master --recursive https://github.com/cvg/Hierarchical-Localization.git /opt/hloc && \
     cd /opt/hloc && git checkout v1.4 && python3.10 -m pip install --no-cache-dir . && cd ~ && \
     TCNN_CUDA_ARCHITECTURES="${CUDA_ARCHITECTURES}" pip install --no-cache-dir "git+https://github.com/NVlabs/tiny-cuda-nn.git@b3473c81396fe927293bdfd5a6be32df8769927c#subdirectory=bindings/torch" && \
-    pip install --no-cache-dir pycolmap==0.6.1 pyceres==2.1 omegaconf==2.3.0 && \
-    pip install --no-cache-dir supervision==0.18
+    pip install --no-cache-dir pycolmap==0.6.1 pyceres==2.1 omegaconf==2.3.0
 
 # Install gsplat and nerfstudio.
 # NOTE: both are installed jointly in order to prevent docker cache with latest
@@ -141,7 +140,8 @@ RUN apt-get update && \
         python3.10-dev \
         build-essential \
         python-is-python3 \
-        ffmpeg
+        ffmpeg \
+        pip
 
 # Copy packages from builder stage.
 COPY --from=builder /build/colmap/ /usr/local/
