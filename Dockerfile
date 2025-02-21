@@ -6,15 +6,15 @@ ARG CUDA_ARCHITECTURES="90;89;86;80;75;70;61"
 ARG NERFSTUDIO_VERSION=""
 
 # Pull source either provided or from git.
-FROM scratch as source_copy
+FROM scratch AS source_copy
 ONBUILD COPY . /tmp/nerfstudio
-FROM alpine/git as source_no_copy
+FROM alpine/git AS source_no_copy
 ARG NERFSTUDIO_VERSION
 ONBUILD RUN git clone --branch ${NERFSTUDIO_VERSION} --recursive https://github.com/NicolasAraya932/nerfstudio.git /tmp/nerfstudio
 ARG NERFSTUDIO_VERSION
-FROM source_${NERFSTUDIO_VERSION:+no_}copy as source
+FROM source_${NERFSTUDIO_VERSION:+no_}copy AS source
 
-FROM nvidia/cuda:${NVIDIA_CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION} as builder
+FROM nvidia/cuda:${NVIDIA_CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION} AS builder
 ARG CUDA_ARCHITECTURES
 ARG NVIDIA_CUDA_VERSION
 ARG UBUNTU_VERSION
@@ -109,7 +109,7 @@ RUN chmod -R go=u /usr/local/lib/python3.10 && \
 #
 # Docker runtime stage.
 #
-FROM nvidia/cuda:${NVIDIA_CUDA_VERSION}-runtime-ubuntu${UBUNTU_VERSION} as runtime
+FROM nvidia/cuda:${NVIDIA_CUDA_VERSION}-runtime-ubuntu${UBUNTU_VERSION} AS runtime
 ARG CUDA_ARCHITECTURES
 ARG NVIDIA_CUDA_VERSION
 ARG UBUNTU_VERSION
