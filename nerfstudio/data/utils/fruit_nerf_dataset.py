@@ -21,7 +21,7 @@ from nerfstudio.process_data.colmap_converter_to_nerfstudio_dataset import (
     ColmapConverterToNerfstudioDataset,
 )
 from nerfstudio.utils.rich_utils import CONSOLE
-from utils.segmentation.grounded_sam.GroundingDINO.groundingdino.util.inference import Model
+from nerfstudio.utils.segmentation.grounded_sam.GroundingDINO.groundingdino.util.inference import Model
 from segment_anything_hq import sam_model_registry, SamPredictor
 
 import os
