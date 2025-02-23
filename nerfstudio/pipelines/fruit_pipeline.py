@@ -39,7 +39,7 @@ from torch.nn import Parameter
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.cuda.amp.grad_scaler import GradScaler
 
-from nerfstudio.configs import base_config as cfg
+from nerfstudio.configs.base_config import InstantiateConfig
 from nerfstudio.data.datamanagers.base_datamanager import (
     DataManager,
     DataManagerConfig,
@@ -52,14 +52,14 @@ from nerfstudio.pipelines.base_pipeline import Pipeline
 
 
 @dataclass
-class FruitPipelineConfig(cfg.InstantiateConfig):
+class FruitPipelineConfig(InstantiateConfig):
     """Configuration for pipeline instantiation"""
 
     _target: Type = field(default_factory=lambda: FruitPipeline)
     """target class to instantiate"""
-    datamanager: DataManagerConfig = DataManagerConfig()
+    datamanager: DataManagerConfig = field(default_factory=DataManagerConfig)
     """specifies the datamanager config"""
-    model: ModelConfig = ModelConfig()
+    model: ModelConfig = field(default_factory=ModelConfig)
     """specifies the model config"""
 
 
