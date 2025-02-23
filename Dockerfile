@@ -86,7 +86,20 @@ RUN pip install --no-cache-dir --upgrade pip 'setuptools<70.0.0' && \
     git clone --branch master --recursive https://github.com/cvg/Hierarchical-Localization.git /opt/hloc && \
     cd /opt/hloc && git checkout v1.4 && python3.10 -m pip install --no-cache-dir . && cd ~ && \
     TCNN_CUDA_ARCHITECTURES="${CUDA_ARCHITECTURES}" pip install --no-cache-dir "git+https://github.com/NVlabs/tiny-cuda-nn.git@b3473c81396fe927293bdfd5a6be32df8769927c#subdirectory=bindings/torch" && \
-    pip install --no-cache-dir pycolmap==0.6.1 pyceres==2.1 omegaconf==2.3.0
+    pip install --no-cache-dir pycolmap==0.6.1 pyceres==2.1 omegaconf==2.3.0 && \
+    pip install --no-cache-dir opencv-python pycocotools matplotlib onnxruntime onnx ipykernel
+
+# Build and install GroundedSAM
+RUN git clone https://github.com/IDEA-Research/Grounded-Segment-Anything.git /usr/local/lib/python3.10/dist-packages/segmentation/grounded_sam && \
+    cd /usr/local/lib/python3.10/dist-packages/segmentation/grounded_sam && \
+    git checkout "fe24" && \
+    pip install --no-cache-dir -e segment_anything && \
+    pip install --no-cache-dir --no-build-isolation -e GroundingDINO && \
+    pip install --no-cache-dir --upgrade diffusers[torch] && \
+    wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth && \
+    wget https://github.com/IDEA-Research/GroundingDINO/releases/download/v0.1.0-alpha/groundingdino_swint_ogc.pth && \
+    pip install --no-cache-dir segment-anything-hq && \
+    cd ~
 
 # Install gsplat and nerfstudio.
 # NOTE: both are installed jointly in order to prevent docker cache with latest
@@ -150,7 +163,7 @@ COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/pyth
 COPY --from=builder /usr/local/bin/ns* /usr/local/bin/
 
 # Install nerfstudio cli auto completion
-RUN /bin/bash -c 'ns-install-cli --mode install'
+#RUN /bin/bash -c 'ns-install-cli --mode install'
 
 # Bash as default entrypoint.
 CMD /bin/bash -l
