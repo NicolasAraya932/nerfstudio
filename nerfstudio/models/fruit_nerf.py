@@ -35,6 +35,7 @@ from nerfstudio.model_components.renderers import (
     SemanticRenderer,
     UncertaintyRenderer,
 )
+from nerfstudio.cameras.camera_optimizers import CameraOptimizer, CameraOptimizerConfig
 from nerfstudio.model_components.ray_samplers import ProposalNetworkSampler, UniformSampler
 from nerfstudio.model_components.scene_colliders import NearFarCollider
 from nerfstudio.models.base_model import Model
@@ -57,6 +58,8 @@ class FruitNerfModelConfig(NerfactoModelConfig):
     num_layers_semantic: int = 2
     hidden_dim_semantics: int = 64
     geo_feat_dim: int = 15
+    camera_optimizer: CameraOptimizerConfig = field(default_factory=lambda: CameraOptimizerConfig(mode="SO3xR3"))
+    """Config of the camera optimizer to use"""
 
 
 class FruitModel(Model):
