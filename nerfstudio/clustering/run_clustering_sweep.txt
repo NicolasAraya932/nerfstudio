@@ -1,0 +1,8 @@
+Module Docstring:
+Copyright (c) 2023 Lukas Meyer
+Licensed under the MIT License.
+See LICENSE file for more information.
+
+Class: Clustering (FruitClustering)
+  Methods:
+    - __init__(self, shape_method: Literal['distance', 'ransac', 'svd'], template_path: Union[str, Path], voxel_size_down_sample: float, remove_outliers_nb_points: int, remove_outliers_radius: float, min_samples: int, apple_template_size: float, cluster_merge_distance: float, gt_cluster, gt_count: int)

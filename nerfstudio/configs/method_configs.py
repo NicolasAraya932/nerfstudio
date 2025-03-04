@@ -90,7 +90,6 @@ descriptions = {
     "fruit_nerf" : "Base config for FruitNeRF",
 }
 
-
 method_configs["nerfacto"] = TrainerConfig(
     method_name="nerfacto",
     steps_per_eval_batch=500,
@@ -306,6 +305,7 @@ method_configs["instant-ngp-bounded"] = TrainerConfig(
     viewer=ViewerConfig(num_rays_per_chunk=1 << 12),
     vis="viewer",
 )
+
 method_configs["mipnerf"] = TrainerConfig(
     method_name="mipnerf",
     pipeline=VanillaPipelineConfig(
@@ -774,90 +774,6 @@ method_configs["splatfacto-mcmc"] = TrainerConfig(
     vis="viewer",
 )
 
-"""
-pipeline=VanillaPipelineConfig(
-    datamanager=ParallelDataManagerConfig(
-        dataparser=NerfstudioDataParserConfig(),
-        train_num_rays_per_batch=4096,
-        eval_num_rays_per_batch=4096,
-    ),
-    model=NerfactoModelConfig(
-        eval_num_rays_per_chunk=1 << 15,
-        average_init_density=0.01,
-        camera_optimizer=CameraOptimizerConfig(mode="SO3xR3"),
-    ),
-),
-"""
-method_configs["fruit_nerf"] = TrainerConfig(
-    method_name="fruit_nerf",
-    steps_per_eval_batch=500,
-    steps_per_save=2000,
-    max_num_iterations=30000,
-    mixed_precision=True,
-    pipeline=VanillaPipelineConfig(
-        datamanager=FruitDataManagerConfig(
-            dataparser=FruitNerfDataParserConfig(),
-            train_num_rays_per_batch=4096,
-            eval_num_rays_per_batch=4096,
-        ),
-        model=FruitNerfModelConfig(
-            eval_num_rays_per_chunk=1 << 15,
-            camera_optimizer=CameraOptimizerConfig(mode="SO3xR3")),
-    ),
-    optimizers={
-        "proposal_networks": {
-            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
-            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
-        },
-        "fields": {
-            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
-            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
-        },
-        "camera_opt":{
-            "optimizer": AdamOptimizerConfig(lr=6e-4, eps=1e-8, weight_decay=1e-2),
-            "scheduler": ExponentialDecaySchedulerConfig(lr_final=6e-6, max_steps=200000),
-        }
-    },
-    viewer=ViewerConfig(num_rays_per_chunk=1 << 13),
-    vis="viewer"
-)
-"""
-method_configs["nerfacto"] = TrainerConfig(
-    method_name="nerfacto",
-    steps_per_eval_batch=500,
-    steps_per_save=2000,
-    max_num_iterations=30000,
-    mixed_precision=True,
-    pipeline=VanillaPipelineConfig(
-        datamanager=ParallelDataManagerConfig(
-            dataparser=NerfstudioDataParserConfig(),
-            train_num_rays_per_batch=4096,
-            eval_num_rays_per_batch=4096,
-        ),
-        model=NerfactoModelConfig(
-            eval_num_rays_per_chunk=1 << 15,
-            average_init_density=0.01,
-            camera_optimizer=CameraOptimizerConfig(mode="SO3xR3"),
-        ),
-    ),
-    optimizers={
-        "proposal_networks": {
-            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
-            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
-        },
-        "fields": {
-            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
-            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
-        },
-        "camera_opt": {
-            "optimizer": AdamOptimizerConfig(lr=1e-3, eps=1e-15),
-            "scheduler": ExponentialDecaySchedulerConfig(lr_final=1e-4, max_steps=5000),
-        },
-    },
-    viewer=ViewerConfig(num_rays_per_chunk=1 << 15),
-    vis="viewer",
-)
-"""
 def merge_methods(methods, method_descriptions, new_methods, new_descriptions, overwrite=True):
     """Merge new methods and descriptions into existing methods and descriptions.
     Args:

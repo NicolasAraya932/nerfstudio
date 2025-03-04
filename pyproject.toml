@@ -14,6 +14,7 @@ classifiers = [
     "Programming Language :: Python",
 ]
 dependencies = [
+    "alphashape",
     "appdirs>=1.4",
     "av>=9.2.0",
     "comet_ml>=3.33.8",
