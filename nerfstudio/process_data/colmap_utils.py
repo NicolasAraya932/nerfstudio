@@ -148,29 +148,35 @@ def run_colmap(
     feature_matcher_cmd = " ".join(feature_matcher_cmd)
     with status(msg="[bold yellow]Running COLMAP feature matcher...", spinner="runner", verbose=verbose):
         run_command(feature_matcher_cmd, verbose=verbose)
+
+    # Exhaustive matching
+    exahustive_matcher_cmd = [
+        f"{colmap_cmd} exahustive_matcher",
+        f"--database_path {colmap_dir / 'database.db'}",
+    ]
+    with status(msg="[bold yellow]Running COLMAP exhaustive matcher...", spinner="runner", verbose=verbose):
+        run_command(exahustive_matcher_cmd, verbose=verbose)
     CONSOLE.log("[bold green]:tada: Done matching COLMAP features.")
 
-    # Bundle adjustment
+    # GLOMAP Bundle adjustment
     sparse_dir = colmap_dir / "sparse"
     sparse_dir.mkdir(parents=True, exist_ok=True)
     mapper_cmd = [
-        f"{colmap_cmd} mapper",
+        f"glomap mapper",
         f"--database_path {colmap_dir / 'database.db'}",
         f"--image_path {image_dir}",
         f"--output_path {sparse_dir}",
     ]
-    if colmap_version >= Version("3.7"):
-        mapper_cmd.append("--Mapper.ba_global_function_tolerance=1e-6")
 
     mapper_cmd = " ".join(mapper_cmd)
 
     with status(
-        msg="[bold yellow]Running COLMAP bundle adjustment... (This may take a while)",
+        msg="[bold yellow]Running GLOMAP bundle adjustment... (This may take a while)",
         spinner="circle",
         verbose=verbose,
     ):
         run_command(mapper_cmd, verbose=verbose)
-    CONSOLE.log("[bold green]:tada: Done COLMAP bundle adjustment.")
+    CONSOLE.log("[bold green]:tada: Done GLOMAP bundle adjustment.")
 
     if refine_intrinsics:
         with status(msg="[bold yellow]Refine intrinsics...", spinner="dqpb", verbose=verbose):
