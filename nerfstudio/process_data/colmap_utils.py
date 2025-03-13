@@ -150,15 +150,16 @@ def run_colmap(
         run_command(feature_matcher_cmd, verbose=verbose)
 
     # Exhaustive matching
-    exahustive_matcher_cmd = [
+    exhaustive_matcher_cmd = [
         f"{colmap_cmd} exahustive_matcher",
         f"--database_path {colmap_dir / 'database.db'}",
     ]
+    exhaustive_matcher_cmd = " ".join(exhaustive_matcher_cmd)
     with status(msg="[bold yellow]Running COLMAP exhaustive matcher...", spinner="runner", verbose=verbose):
-        run_command(exahustive_matcher_cmd, verbose=verbose)
+        run_command(exhaustive_matcher_cmd, verbose=verbose)
     CONSOLE.log("[bold green]:tada: Done matching COLMAP features.")
 
-    # GLOMAP Bundle adjustment
+    # Bundle adjustment
     sparse_dir = colmap_dir / "sparse"
     sparse_dir.mkdir(parents=True, exist_ok=True)
     mapper_cmd = [
@@ -167,6 +168,8 @@ def run_colmap(
         f"--image_path {image_dir}",
         f"--output_path {sparse_dir}",
     ]
+    #if colmap_version >= Version("3.7"):
+    #    mapper_cmd.append("--Mapper.ba_global_function_tolerance=1e-6")
 
     mapper_cmd = " ".join(mapper_cmd)
 
