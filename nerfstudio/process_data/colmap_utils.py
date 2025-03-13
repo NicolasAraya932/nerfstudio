@@ -154,6 +154,7 @@ def run_colmap(
         f"{colmap_cmd} exahustive_matcher",
         f"--database_path {colmap_dir / 'database.db'}",
     ]
+    exahustive_matcher_cmd= " ".join(exahustive_matcher_cmd)
     with status(msg="[bold yellow]Running COLMAP exhaustive matcher...", spinner="runner", verbose=verbose):
         run_command(exahustive_matcher_cmd, verbose=verbose)
     CONSOLE.log("[bold green]:tada: Done matching COLMAP features.")
