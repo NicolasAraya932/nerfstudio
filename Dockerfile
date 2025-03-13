@@ -55,18 +55,6 @@ RUN wget https://github.com/Kitware/CMake/releases/download/v3.31.3/cmake-3.31.3
     && rm /tmp/cmake-install.sh \
     && ln -s /opt/cmake-3.31.3/bin/* /usr/local/bin
     
-# Build and install GLOMAP.
-RUN git clone https://github.com/colmap/glomap.git && \
-    cd glomap && \
-    git checkout "1.0.0" && \
-    mkdir build && \
-    cd build && \
-    mkdir -p /build && \
-    cmake .. -GNinja "-DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}" \
-        -DCMAKE_INSTALL_PREFIX=/build/glomap && \
-    ninja install -j1 && \
-    cd ~
-
 # Build and install COLMAP.
 RUN git clone https://github.com/colmap/colmap.git && \
     cd colmap && \
@@ -76,6 +64,18 @@ RUN git clone https://github.com/colmap/colmap.git && \
     mkdir -p /build && \
     cmake .. -GNinja "-DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}" \
         -DCMAKE_INSTALL_PREFIX=/build/colmap && \
+    ninja install -j1 && \
+    cd ~
+
+# Build and install GLOMAP.
+RUN git clone https://github.com/colmap/glomap.git && \
+    cd glomap && \
+    git checkout "1.0.0" && \
+    mkdir build && \
+    cd build && \
+    mkdir -p /build && \
+    cmake .. -GNinja "-DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}" \
+        -DCMAKE_INSTALL_PREFIX=/build/glomap && \
     ninja install -j1 && \
     cd ~
 
@@ -110,10 +110,10 @@ RUN git clone https://github.com/IDEA-Research/Grounded-Segment-Anything.git /us
 COPY --from=source /tmp/nerfstudio/ /tmp/nerfstudio
 RUN export TORCH_CUDA_ARCH_LIST="$(echo "$CUDA_ARCHITECTURES" | tr ';' '\n' | awk '$0 > 70 {print substr($0,1,1)"."substr($0,2)}' | tr '\n' ' ' | sed 's/ $//')" && \
     export MAX_JOBS=4 && \
+    wget https://github.com/nerfstudio-project/gsplat/releases/download/v1.4.0/gsplat-1.4.0+pt21cu118-cp310-cp310-linux_x86_64.whl && \
+    pip install --no-cache-dir gsplat-1.4.0+pt21cu118-cp310-cp310-linux_x86_64.whl && \
     pip install --no-cache-dir /tmp/nerfstudio 'numpy<2.0.0' && \
-    rm -rf /tmp/nerfstudio
-# GSPLAT_VERSION="$(sed -n 's/.*gsplat==\s*\([^," '"'"']*\).*/\1/p' /tmp/nerfstudio/pyproject.toml)" && 
-# pip install --no-cache-dir git+https://github.com/nerfstudio-project/gsplat.git@v${GSPLAT_VERSION} &&
+    rm -rf /tmp/nerfstudios 
 
 # Fix permissions
 RUN chmod -R go=u /usr/local/lib/python3.10 && \
