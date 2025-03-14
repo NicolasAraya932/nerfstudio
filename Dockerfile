@@ -64,7 +64,7 @@ RUN git clone https://github.com/colmap/colmap.git && \
     mkdir -p /build && \
     cmake .. -GNinja "-DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}" \
         -DCMAKE_INSTALL_PREFIX=/build/colmap && \
-    ninja install -j1 && \
+    ninja install -j4 && \
     cd ~
 
 # Build and install GLOMAP.
@@ -76,7 +76,7 @@ RUN git clone https://github.com/colmap/glomap.git && \
     mkdir -p /build && \
     cmake .. -GNinja "-DCMAKE_CUDA_ARCHITECTURES=${CUDA_ARCHITECTURES}" \
         -DCMAKE_INSTALL_PREFIX=/build/glomap && \
-    ninja install -j1 && \
+    ninja install -j4 && \
     cd ~
 
 # Upgrade pip and install dependencies.

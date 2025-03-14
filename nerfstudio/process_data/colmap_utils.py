@@ -151,7 +151,7 @@ def run_colmap(
 
     # Exhaustive matching
     exhaustive_matcher_cmd = [
-        f"{colmap_cmd} exahustive_matcher",
+        f"{colmap_cmd} exhaustive_matcher",
         f"--database_path {colmap_dir / 'database.db'}",
     ]
     exhaustive_matcher_cmd = " ".join(exhaustive_matcher_cmd)
