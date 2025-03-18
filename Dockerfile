@@ -21,7 +21,7 @@ ARG UBUNTU_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV QT_XCB_GL_INTEGRATION=xcb_egl
-RUN apt-get update && \
+RUN apt-get update && apt-get upgrade -y && \
     apt-get install -y --no-install-recommends --no-install-suggests \
         git \
         wget \
@@ -45,6 +45,12 @@ RUN apt-get update && \
         libceres-dev \
         python3.10-dev \
         python3-pip
+
+# git config
+RUN git config --global http.postBuffer 1073741824 && \
+    git config --global http.maxRequestBuffer 1073741824 && \
+    git config --global http.version HTTP/1.1 && \
+    git config --global core.compression 0
 
 # Build and install CMake
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.31.3/cmake-3.31.3-linux-x86_64.sh \
@@ -81,7 +87,8 @@ RUN git clone https://github.com/colmap/glomap.git && \
 
 # Upgrade pip and install dependencies.
 # pip install torch==2.2.2 torchvision==0.17.2 --index-url https://download.pytorch.org/whl/cu118 && \
-RUN pip install --no-cache-dir --upgrade pip 'setuptools<70.0.0' && \
+RUN python3 -m pip install --upgrade pip setuptools && \
+    pip install --no-cache-dir --upgrade pip 'setuptools<70.0.0' && \
     pip install --no-cache-dir torch==2.1.2+cu118 torchvision==0.16.2+cu118 'numpy<2.0.0' --extra-index-url https://download.pytorch.org/whl/cu118 && \
     git clone --branch master --recursive https://github.com/cvg/Hierarchical-Localization.git /opt/hloc && \
     cd /opt/hloc && git checkout v1.4 && python3.10 -m pip install --no-cache-dir . && cd ~ && \
@@ -92,7 +99,6 @@ RUN pip install --no-cache-dir --upgrade pip 'setuptools<70.0.0' && \
 # Build and install GroundedSAM
 RUN git clone https://github.com/IDEA-Research/Grounded-Segment-Anything.git /usr/local/lib/python3.10/dist-packages/segmentation/grounded_sam && \
     cd /usr/local/lib/python3.10/dist-packages/segmentation/grounded_sam && \
-    git checkout "fe24" && \
     pip install --no-cache-dir -e segment_anything && \
     pip install --no-cache-dir --no-build-isolation -e GroundingDINO && \
     pip install --no-cache-dir --upgrade diffusers[torch] && \
@@ -163,7 +169,7 @@ COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/pyth
 COPY --from=builder /usr/local/bin/ns* /usr/local/bin/
 
 # Install nerfstudio cli auto completion
-#RUN /bin/bash -c 'ns-install-cli --mode install'
+RUN /bin/bash -c 'ns-install-cli --mode install'
 
 # Bash as default entrypoint.
 CMD /bin/bash -l

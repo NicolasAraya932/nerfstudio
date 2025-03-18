@@ -90,5 +90,5 @@ def test_simple_io(tmp_path: Path):
 
 
 if __name__ == "__main__":
-    test_train()
+    test_train(".")
     test_simple_io()
