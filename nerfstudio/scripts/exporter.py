@@ -36,10 +36,12 @@ from typing_extensions import Annotated, Literal
 
 from nerfstudio.cameras.rays import RayBundle
 from nerfstudio.data.datamanagers.base_datamanager import VanillaDataManager
+from nerfstudio.data.datamanagers.full_images_datamanager import FullImageDatamanager
 from nerfstudio.data.datamanagers.parallel_datamanager import ParallelDataManager
+from nerfstudio.data.datamanagers.random_cameras_datamanager import RandomCamerasDataManager
 from nerfstudio.data.scene_box import OrientedBox
 from nerfstudio.exporter import texture_utils, tsdf_utils
-from nerfstudio.exporter.exporter_utils import collect_camera_poses, generate_point_cloud, get_mesh_from_filename, sample_volume
+from nerfstudio.exporter.exporter_utils import collect_camera_poses, generate_point_cloud, get_mesh_from_filename
 from nerfstudio.exporter.marching_cubes import generate_mesh_with_multires_marching_cubes
 from nerfstudio.fields.sdf_field import SDFField  # noqa
 from nerfstudio.models.splatfacto import SplatfactoModel
@@ -139,11 +141,10 @@ class ExportPointCloud(Exporter):
         # Increase the batchsize to speed up the evaluation.
         assert isinstance(
             pipeline.datamanager,
-            (VanillaDataManager, ParallelDataManager),
+            (VanillaDataManager, ParallelDataManager, FullImageDatamanager, RandomCamerasDataManager),
         )
-        if isinstance(pipeline.datamanager, VanillaDataManager):
-            assert pipeline.datamanager.train_pixel_sampler is not None
-            pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+        assert pipeline.datamanager.train_pixel_sampler is not None
+        pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
 
         # Whether the normals should be estimated based on the point cloud.
         estimate_normals = self.normal_method == "open3d"
@@ -328,11 +329,10 @@ class ExportPoissonMesh(Exporter):
         # Increase the batchsize to speed up the evaluation.
         assert isinstance(
             pipeline.datamanager,
-            (VanillaDataManager, ParallelDataManager),
+            (VanillaDataManager, ParallelDataManager, FullImageDatamanager, RandomCamerasDataManager),
         )
-        if isinstance(pipeline.datamanager, VanillaDataManager):
-            assert pipeline.datamanager.train_pixel_sampler is not None
-            pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+        assert pipeline.datamanager.train_pixel_sampler is not None
+        pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
 
         # Whether the normals should be estimated based on the point cloud.
         estimate_normals = self.normal_method == "open3d"
@@ -655,65 +655,6 @@ class ExportGaussianSplat(Exporter):
         ExportGaussianSplat.write_ply(str(filename), count, map_to_tensors)
 
 
-@dataclass
-class ExportSemanticPointCloud(Exporter):
-    """Export NeRF as a point cloud."""
-
-    use_bounding_box: bool = True
-    """Only query points within the bounding box"""
-    bounding_box_min: Tuple[float, float, float] = (-1, -1, -1)
-    """Minimum of the bounding box, used if use_bounding_box is True."""
-    bounding_box_max: Tuple[float, float, float] = (1, 1, 1)
-    """Maximum of the bounding box, used if use_bounding_box is True."""
-    num_rays_per_batch: int = 32768
-    """Number of rays to evaluate per batch. Decrease if you run out of memory."""
-    num_points_per_side: int = 1000
-    """Number of points sampled at the initial side of the volume (cube)"""
-
-
-    def main(self) -> None:
-        """Export point cloud."""
-
-        if not self.output_dir.exists():
-            self.output_dir.mkdir(parents=True)
-
-        config, pipeline, _, _ = eval_setup(self.load_config, test_mode='export')
-
-        # Increase the batchsize to speed up the evaluation.
-        assert isinstance(pipeline.datamanager, VanillaDataManager)
-        # assert pipeline.datamanager.train_pixel_sampler is not None
-        # pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
-        pipeline.datamanager.config.eval_num_rays_per_batch = self.num_rays_per_batch
-
-        pipeline.model.setup_inference(render_rgb=True, num_inference_samples=self.num_points_per_side)
-        num_points = pipeline.datamanager.setup_inference(num_points=self.num_points_per_side,
-                                                          aabb=(self.bounding_box_min, self.bounding_box_max))
-
-        # Transform json
-        with open(self.load_config.parent / 'dataparser_transforms.json', 'r') as fp:
-            transform_json = json.load(fp)
-
-        pcds = sample_volume(
-            pipeline=pipeline,
-            num_points=num_points,
-            output_dir=self.output_dir,
-            config=config,
-            transform_json=transform_json
-        )
-        torch.cuda.empty_cache()
-
-        os.makedirs(str(self.output_dir / config.load_dir.parts[-3]), exist_ok=True)
-
-        # o3d.io.write_point_cloud(str(output_dir / config.load_dir.parts[-3] / 'semantic_colormap.ply'), pcd)
-        CONSOLE.print("Saving Point Cloud...")
-
-        for pcd_name in pcds.keys():
-            pcd = pcds[pcd_name]['pcd']
-            pcd_path = pcds[pcd_name]['path']
-            o3d.io.write_point_cloud(pcd_path, pcd)
-
-        CONSOLE.print("[bold green]:white_check_mark: Saving Point Cloud")
-
 Commands = tyro.conf.FlagConversionOff[
     Union[
         Annotated[ExportPointCloud, tyro.conf.subcommand(name="pointcloud")],
@@ -722,9 +663,6 @@ Commands = tyro.conf.FlagConversionOff[
         Annotated[ExportMarchingCubesMesh, tyro.conf.subcommand(name="marching-cubes")],
         Annotated[ExportCameraPoses, tyro.conf.subcommand(name="cameras")],
         Annotated[ExportGaussianSplat, tyro.conf.subcommand(name="gaussian-splat")],
-        # Fruit NeRF export commands
-        Annotated[ExportSemanticPointCloud, tyro.conf.subcommand(name="semantic-pointcloud")],
-        Annotated[ExportPointCloud, tyro.conf.subcommand(name="pointcloud")],
     ]
 ]
 

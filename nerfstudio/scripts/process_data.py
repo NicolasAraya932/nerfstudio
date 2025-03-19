@@ -33,8 +33,6 @@ from nerfstudio.process_data import (
     realitycapture_utils,
     record3d_utils,
 )
-
-from nerfstudio.data.utils.fruit_nerf_dataset import FruitNerfDataset
 from nerfstudio.process_data.colmap_converter_to_nerfstudio_dataset import BaseConverterToNerfstudioDataset
 from nerfstudio.process_data.images_to_nerfstudio_dataset import ImagesToNerfstudioDataset
 from nerfstudio.process_data.video_to_nerfstudio_dataset import VideoToNerfstudioDataset
@@ -531,7 +529,6 @@ Commands = Union[
     Annotated[ProcessRealityCapture, tyro.conf.subcommand(name="realitycapture")],
     Annotated[ProcessRecord3D, tyro.conf.subcommand(name="record3d")],
     Annotated[ProcessODM, tyro.conf.subcommand(name="odm")],
-    Annotated[FruitNerfDataset, tyro.conf.subcommand(name="fruit")],
 ]
 
 # Add aria subcommand if projectaria_tools is installed.
