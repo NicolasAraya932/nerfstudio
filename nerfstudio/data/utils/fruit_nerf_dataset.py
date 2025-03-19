@@ -52,7 +52,7 @@ class GroundedSAM(BaseImageSegmentation):
     def __init__(self, device='cpu', debug=False):
         super().__init__(device=device, debug=debug)
 
-        from utils import segmentation
+        import segmentation
         weights_base_path = Path(segmentation.__path__[0])
 
         self.model_config_path = weights_base_path / 'grounded_sam/GroundingDINO/groundingdino/config/GroundingDINO_SwinT_OGC.py'
@@ -379,6 +379,6 @@ class FruitNerfDataset(ColmapConverterToNerfstudioDataset):
 
 
 if __name__ == '__main__':
-    path = "/home/se86kimy/Dropbox/07_data/For5G/24_03_26/Drohne_4KK/DCIM/DJI_202403261424_005/Tree_row_4k_short_multiple_heights/result/images_2/frame_00018.png"
+    path = "/workspace/Nerfstudio with Fruit NeRF/nerfstudio/data/01_apple_tree_1024x1024_#300/images/0000.png"
     gs = GroundedSAM()
     gs.run(image_path=path, output_dir="./test", text_prompt=['tree'], output_filename=Path('test_tree.png'), flag_segmentation_image_debug=True)
