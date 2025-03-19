@@ -24,7 +24,6 @@ from nerfstudio.data.utils.fruit_nerf_dataset import (
     FruitNerfDataset,
 )
 
-from nerfstudio.utils.rich_utils import CONSOLE
 
 Commands = Union[
     Annotated[FruitNerfDataset, tyro.conf.subcommand(name="fruit")],
