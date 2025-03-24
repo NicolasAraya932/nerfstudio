@@ -64,6 +64,7 @@ from nerfstudio.models.fruit_nerf import FruitNerfModelConfig
 from nerfstudio.pipelines.base_pipeline import VanillaPipelineConfig
 from nerfstudio.pipelines.dynamic_batch import DynamicBatchPipelineConfig
 from nerfstudio.pipelines.fruit_pipeline import FruitPipeline, FruitPipelineConfig
+from nerfstudio.data.datamanagers.parallelfruit_datamanager import ParallelFruitDataManager, ParallelFruitDataManagerConfig
 from nerfstudio.data.datamanagers.fruit_datamanager import FruitDataManager, FruitDataManagerConfig
 from nerfstudio.data.dataparsers.fruitnerf_dataparser import FruitNerfDataParserConfig
 from nerfstudio.plugins.registry import discover_methods
@@ -781,7 +782,7 @@ method_configs["fruit_nerf"] = TrainerConfig(
     max_num_iterations=30000,
     mixed_precision=True,
     pipeline=VanillaPipelineConfig(
-        datamanager=FruitDataManagerConfig(
+        datamanager=ParallelFruitDataManagerConfig(
             dataparser=FruitNerfDataParserConfig(),
             train_num_rays_per_batch=4096,
             eval_num_rays_per_batch=4096,
