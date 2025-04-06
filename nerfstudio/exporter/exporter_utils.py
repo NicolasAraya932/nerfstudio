@@ -23,7 +23,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 import numpy as np
-import pathlib
 import pymeshlab
 import torch
 from jaxtyping import Float
@@ -57,7 +56,6 @@ class Mesh:
     colors: Optional[Float[Tensor, "num_verts 3"]] = None
     """Colors of the mesh."""
 
-
 def get_mesh_from_pymeshlab_mesh(mesh: pymeshlab.Mesh) -> Mesh:  # type: ignore
     """Get a Mesh from a pymeshlab mesh.
     See https://pymeshlab.readthedocs.io/en/0.1.5/classes/mesh.html for details.
@@ -69,7 +67,6 @@ def get_mesh_from_pymeshlab_mesh(mesh: pymeshlab.Mesh) -> Mesh:  # type: ignore
         colors=torch.from_numpy(mesh.vertex_color_matrix()).float(),
     )
 
-
 def get_mesh_from_filename(filename: str, target_num_faces: Optional[int] = None) -> Mesh:
     """Get a Mesh from a filename."""
     ms = pymeshlab.MeshSet()  # type: ignore
@@ -80,6 +77,135 @@ def get_mesh_from_filename(filename: str, target_num_faces: Optional[int] = None
     mesh = ms.current_mesh()
     return get_mesh_from_pymeshlab_mesh(mesh)
 
+def generate_radiance_fields_cloud(
+    pipeline: Pipeline,
+    num_points: int = 3500000,
+    rgb_output_name: str = "rgb",
+    depth_output_name: str = "depth",
+    normal_output_name: Optional[str] = None,
+    crop_obb: Optional[OrientedBox] = None,
+) -> Dict[str, torch.Tensor]:
+    """Generate a radiance field dataset from a NeRF model.
+
+    Args:
+        pipeline: Pipeline to evaluate with.
+        num_points: Number of points to generate. May result in less if outlier removal is used.
+        rgb_output_name: Name of the RGB output.
+        depth_output_name: Name of the depth output.
+        normal_output_name: Name of the normal output.
+        crop_obb: Optional oriented bounding box to crop points.
+
+    Returns:
+        A dictionary containing all radiance field data.
+    """
+
+    # Initialize progress bar
+    progress = Progress(
+        TextColumn(":cloud: Computing Radiance Field :cloud:"),
+        BarColumn(),
+        TaskProgressColumn(show_speed=True),
+        TimeRemainingColumn(elapsed_when_finished=True, compact=True),
+        console=CONSOLE,
+    )
+
+    # Initialize lists to store outputs
+    points = []
+    rgbs = []
+    accumulations = []
+    depths = []
+    origins = []
+    directions = []
+    pixel_areas = []
+    normals = []
+    view_directions = []
+
+    with progress as progress_bar:
+        task = progress_bar.add_task("Generating Radiance Field", total=num_points)
+        while not progress_bar.finished:
+            normal = None
+
+            with torch.no_grad():
+                ray_bundle, _ = pipeline.datamanager.next_train(0)
+                assert isinstance(ray_bundle, RayBundle)
+                outputs = pipeline.model(ray_bundle)
+
+            # Validate outputs
+            if rgb_output_name not in outputs:
+                CONSOLE.rule("Error", style="red")
+                CONSOLE.print(f"Could not find {rgb_output_name} in the model outputs", justify="center")
+                CONSOLE.print(f"Please set --rgb_output_name to one of: {outputs.keys()}", justify="center")
+                sys.exit(1)
+            if depth_output_name not in outputs:
+                CONSOLE.rule("Error", style="red")
+                CONSOLE.print(f"Could not find {depth_output_name} in the model outputs", justify="center")
+                CONSOLE.print(f"Please set --depth_output_name to one of: {outputs.keys()}", justify="center")
+                sys.exit(1)
+
+            rgba = pipeline.model.get_rgba_image(outputs, rgb_output_name)
+            depth = outputs[depth_output_name]
+
+            if normal_output_name is not None:
+                if normal_output_name not in outputs:
+                    CONSOLE.rule("Error", style="red")
+                    CONSOLE.print(f"Could not find {normal_output_name} in the model outputs", justify="center")
+                    CONSOLE.print(f"Please set --normal_output_name to one of: {outputs.keys()}", justify="center")
+                    sys.exit(1)
+                normal = outputs[normal_output_name]
+                assert (
+                    torch.min(normal) >= 0.0 and torch.max(normal) <= 1.0
+                ), "Normal values from method output must be in [0, 1]"
+                normal = (normal * 2.0) - 1.0
+
+            point = ray_bundle.origins + ray_bundle.directions * depth
+            view_direction = ray_bundle.directions
+
+            # Filter points with opacity lower than 0.01
+            mask = rgba[..., -1] > 0.01
+            point = point[mask]
+            view_direction = view_direction[mask]
+            rgb = rgba[mask][..., :3]
+            if normal is not None:
+                normal = normal[mask]
+
+            if crop_obb is not None:
+                mask = crop_obb.within(point)
+                point = point[mask]
+                rgb = rgb[mask]
+                view_direction = view_direction[mask]
+                if normal is not None:
+                    normal = normal[mask]
+
+            # Append data to lists
+            points.append(point.cpu())
+            rgbs.append(rgb.cpu())
+            accumulations.append(outputs["accumulation"][mask].cpu())
+            depths.append(outputs["depth"][mask].cpu())
+            origins.append(ray_bundle.origins[mask].cpu())
+            directions.append(ray_bundle.directions[mask].cpu())
+            pixel_areas.append(ray_bundle.pixel_area[mask].cpu())
+            view_directions.append(view_direction.cpu())
+
+            if normal is not None:
+                normals.append(normal.cpu())
+
+            progress.advance(task, point.shape[0])
+
+    # Combine lists into tensors on the CPU
+    radiance_field_data = {
+        "points": torch.cat(points, dim=0),
+        "rgb": torch.cat(rgbs, dim=0),
+        "accumulation": torch.cat(accumulations, dim=0),
+        "depth": torch.cat(depths, dim=0),
+        "origins": torch.cat(origins, dim=0),
+        "directions": torch.cat(directions, dim=0),
+        "pixel_area": torch.cat(pixel_areas, dim=0),
+        "view_directions": torch.cat(view_directions, dim=0),
+    }
+
+    if normals:
+        radiance_field_data["normals"] = torch.cat(normals, dim=0)
+
+    return radiance_field_data
 
 def generate_point_cloud(
     pipeline: Pipeline,
@@ -149,10 +275,166 @@ def generate_point_cloud(
                     CONSOLE.print(f"Please set --normal_output_name to one of: {outputs.keys()}", justify="center")
                     sys.exit(1)
                 normal = outputs[normal_output_name]
-                assert torch.min(normal) >= 0.0 and torch.max(normal) <= 1.0, (
-                    "Normal values from method output must be in [0, 1]"
-                )
+                assert (
+                    torch.min(normal) >= 0.0 and torch.max(normal) <= 1.0
+                ), "Normal values from method output must be in [0, 1]"
                 normal = (normal * 2.0) - 1.0
+            point = ray_bundle.origins + ray_bundle.directions * depth
+            view_direction = ray_bundle.directions
+
+            # Filter points with opacity lower than 0.5
+            mask = rgba[..., -1] > 0.5
+            point = point[mask]
+            view_direction = view_direction[mask]
+            rgb = rgba[mask][..., :3]
+            if normal is not None:
+                normal = normal[mask]
+
+            if crop_obb is not None:
+                mask = crop_obb.within(point)
+                point = point[mask]
+                rgb = rgb[mask]
+                view_direction = view_direction[mask]
+                if normal is not None:
+                    normal = normal[mask]
+
+            points.append(point)
+            rgbs.append(rgb)
+            view_directions.append(view_direction)
+            if normal is not None:
+                normals.append(normal)
+            progress.advance(task, point.shape[0])
+    points = torch.cat(points, dim=0)
+    rgbs = torch.cat(rgbs, dim=0)
+    view_directions = torch.cat(view_directions, dim=0).cpu()
+
+    import open3d as o3d
+
+    pcd = o3d.geometry.PointCloud()
+    pcd.points = o3d.utility.Vector3dVector(points.double().cpu().numpy())
+    pcd.colors = o3d.utility.Vector3dVector(rgbs.double().cpu().numpy())
+
+    ind = None
+    if remove_outliers:
+        CONSOLE.print("Cleaning Point Cloud")
+        pcd, ind = pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=std_ratio)
+        print("\033[A\033[A")
+        CONSOLE.print("[bold green]:white_check_mark: Cleaning Point Cloud")
+        if ind is not None:
+            view_directions = view_directions[ind]
+
+    # either estimate_normals or normal_output_name, not both
+    if estimate_normals:
+        if normal_output_name is not None:
+            CONSOLE.rule("Error", style="red")
+            CONSOLE.print("Cannot estimate normals and use normal_output_name at the same time", justify="center")
+            sys.exit(1)
+        CONSOLE.print("Estimating Point Cloud Normals")
+        pcd.estimate_normals()
+        print("\033[A\033[A")
+        CONSOLE.print("[bold green]:white_check_mark: Estimating Point Cloud Normals")
+    elif normal_output_name is not None:
+        normals = torch.cat(normals, dim=0)
+        if ind is not None:
+            # mask out normals for points that were removed with remove_outliers
+            normals = normals[ind]
+        pcd.normals = o3d.utility.Vector3dVector(normals.double().cpu().numpy())
+
+    # re-orient the normals
+    if reorient_normals:
+        normals = torch.from_numpy(np.array(pcd.normals)).float()
+        mask = torch.sum(view_directions * normals, dim=-1) > 0
+        normals[mask] *= -1
+        pcd.normals = o3d.utility.Vector3dVector(normals.double().cpu().numpy())
+
+    return pcd
+
+def generate_semantics_sample_point_cloud(
+    pipeline: Pipeline,
+    num_points: int = 1000000,
+    remove_outliers: bool = True,
+    estimate_normals: bool = False,
+    reorient_normals: bool = False,
+    rgb_output_name: str = "rgb",
+    semantic_output_name: str = "semantics",
+    semantics_colormap_output_name: str = "semantics_colormap",
+    sampled_point_position_output_name: str = "point_location",
+    depth_output_name: str = "depth",
+    normal_output_name: Optional[str] = None,
+    crop_obb: Optional[OrientedBox] = None,
+    std_ratio: float = 10.0,
+) -> o3d.geometry.PointCloud:
+
+    progress = Progress(
+        TextColumn(":cloud: Computing Point Cloud :cloud:"),
+        BarColumn(),
+        TaskProgressColumn(show_speed=True),
+        TimeRemainingColumn(elapsed_when_finished=True, compact=True),
+        console=CONSOLE,
+    )
+
+    points = []
+    rgbs = []
+    normals = []
+    view_directions = []
+
+    points_sem = []
+    points_only_sem = []
+    points_den = []
+    points_sem_colormap = []
+    color_semantics = []
+    color_only_semantics = []
+    color_semantics_colormap = []
+    densities = []
+
+    with progress as progress_bar:
+        task = progress_bar.add_task("Generating Point Cloud", total=num_points)
+        while not progress_bar.finished:
+            normal = None
+
+            with torch.no_grad():
+                ray_bundle, _ = pipeline.datamanager.next_train(0)
+                assert isinstance(ray_bundle, RayBundle)
+                outputs = pipeline.model(ray_bundle)
+
+            if rgb_output_name not in outputs:
+                CONSOLE.rule("Error", style="red")
+                CONSOLE.print(f"Could not find {rgb_output_name} in the model outputs", justify="center")
+                CONSOLE.print(f"Please set --rgb_output_name to one of: {outputs.keys()}", justify="center")
+                sys.exit(1)
+            
+            if semantic_output_name not in outputs:
+                return NotImplementedError
+            
+            if semantics_colormap_output_name not in outputs:
+                return NotImplementedError
+
+            if sampled_point_position_output_name not in outputs:
+                return NotImplementedError
+
+            if depth_output_name not in outputs:
+                CONSOLE.rule("Error", style="red")
+                CONSOLE.print(f"Could not find {depth_output_name} in the model outputs", justify="center")
+                CONSOLE.print(f"Please set --depth_output_name to one of: {outputs.keys()}", justify="center")
+                sys.exit(1)
+
+            rgba = pipeline.model.get_outputs(outputs, rgb_output_name)
+            depth = outputs[depth_output_name]
+            
+
+            if normal_output_name is not None:
+                if normal_output_name not in outputs:
+                    CONSOLE.rule("Error", style="red")
+                    CONSOLE.print(f"Could not find {normal_output_name} in the model outputs", justify="center")
+                    CONSOLE.print(f"Please set --normal_output_name to one of: {outputs.keys()}", justify="center")
+                    sys.exit(1)
+                normal = outputs[normal_output_name]
+                assert (
+                    torch.min(normal) >= 0.0 and torch.max(normal) <= 1.0
+                ), "Normal values from method output must be in [0, 1]"
+                normal = (normal * 2.0) - 1.0
+            
+
             point = ray_bundle.origins + ray_bundle.directions * depth
             view_direction = ray_bundle.directions
 
@@ -353,216 +635,3 @@ def collect_camera_poses(pipeline: VanillaPipeline) -> Tuple[List[Dict[str, Any]
 
     return train_frames, eval_frames
 
-
-def sample_volume(
-        pipeline: Pipeline,
-        num_points: int,
-        output_dir: pathlib.Path = None,
-        config=None,
-        transform_json: dict = None
-) -> dict:
-    """Generate a point cloud from a nerf.
-
-    Args:
-        pipeline: Pipeline to evaluate with.
-        num_points_per_side: Number of points to generate. May result in less if outlier removal is used.
-        remove_outliers: Whether to remove outliers.
-        estimate_normals: Whether to estimate normals.
-        rgb_output_name: Name of the RGB output.
-        depth_output_name: Name of the depth output.
-        normal_output_name: Name of the normal output.
-        use_bounding_box: Whether to use a bounding box to sample points.
-        bounding_box_min: Minimum of the bounding box.
-        bounding_box_max: Maximum of the bounding box.
-        std_ratio: Threshold based on STD of the average distances across the point cloud to remove outliers.
-        output_dir: save pcds to output dir.
-
-    Returns:
-        Point cloud.
-    """
-
-    progress = Progress(
-        TextColumn(":cloud: Computing Point Cloud :cloud:"),
-        BarColumn(),
-        TaskProgressColumn(show_speed=True),
-        TimeRemainingColumn(elapsed_when_finished=True, compact=True),
-        console=CONSOLE,
-    )
-
-    points_sem = []
-    points_only_sem = []
-    points_den = []
-    points_sem_colormap = []
-    color_semantics = []
-    color_only_semantics = []
-    color_semantics_colormap = []
-    densities = []
-
-    rgb_flag = True
-    # sample_points_along_edge = num_points_per_side # num_points_per_side
-    with progress as progress_bar:
-        task = progress_bar.add_task("Generating Point Cloud", total=num_points)
-        while not progress_bar.finished:
-            with torch.no_grad():
-                ray_bundle, _ = pipeline.datamanager.next_sample_volume(0)
-                outputs = pipeline.model(ray_bundle)
-
-            # Sampled volume points
-            sampled_point_position = outputs['point_location']
-            points_3d = sampled_point_position.reshape((-1, 3))
-
-            # Semantic & Density value
-            semantic = outputs['semantics'].reshape((-1, 1)).repeat((1, 3))
-            semantics_colormap = outputs['semantics_colormap'].reshape((-1, 1)).repeat((1, 3))
-            density = outputs['density'].reshape((-1, 1)).repeat((1, 3))
-            rgb = outputs['rgb'].reshape((-1, 3))
-
-            # Mask irrelevant semantic masks and density values
-            mask_sem = semantic >= 3  # 20
-            mask_den = density >= 70  # 10
-            mask_sem_colormap = semantics_colormap >= 0.999
-            mask_only_sem = semantics_colormap >= 0.99  # 9
-
-            # Semantic colormap
-            points_3d_semantic_colormap = points_3d[
-                mask_sem_colormap.sum(dim=1).to(bool) & mask_den.sum(dim=1).to(bool)]
-            if rgb_flag:
-                color_semantic_colormap = rgb[mask_sem_colormap.sum(dim=1).to(bool) & mask_den.sum(dim=1).to(bool)]
-            else:
-                color_semantic_colormap = semantics_colormap[
-                    mask_sem_colormap.sum(dim=1).to(bool) & mask_den.sum(dim=1).to(bool)]
-
-            color_semantic_colormap = torch.hstack([color_semantic_colormap, torch.sigmoid(
-                semantic[mask_sem_colormap.sum(dim=1).to(bool) & mask_den.sum(dim=1).to(bool)][:, 0]).unsqueeze(-1)])
-            points_sem_colormap.append(points_3d_semantic_colormap.cpu())
-            color_semantics_colormap.append(color_semantic_colormap.cpu())
-
-            # Semantic
-            points_3d_semantic = points_3d[mask_sem.sum(dim=1).to(bool) & mask_den.sum(dim=1).to(bool)]
-            if rgb_flag:
-                color_semantic = rgb[mask_sem.sum(dim=1).to(bool) & mask_den.sum(dim=1).to(bool)]
-            else:
-                color_semantic = semantic[mask_sem.sum(dim=1).to(bool) & mask_den.sum(dim=1).to(bool)]
-            color_semantic = torch.hstack([color_semantic, torch.sigmoid(
-                semantic[mask_sem.sum(dim=1).to(bool) & mask_den.sum(dim=1).to(bool)][:, 0]).unsqueeze(-1)])
-            points_sem.append(points_3d_semantic.cpu())  # & mask_den.sum(dim=1).to(bool)
-            color_semantics.append(color_semantic.cpu())  # & mask_den.sum(dim=1).to(bool)
-
-            # RGB
-            points_3d_density = points_3d[mask_den.sum(dim=1).to(bool)]
-            if rgb_flag:
-                density_color = rgb[mask_den.sum(dim=1).to(bool)]
-            else:
-                density_color = density[mask_den.sum(dim=1).to(bool)]
-            density_color = torch.hstack(
-                [density_color, torch.sigmoid(density[mask_den.sum(dim=1).to(bool)][:, 0]).unsqueeze(-1)])
-
-            # rgb_color = rgb[mask_den.sum(dim=1).to(bool)]
-            points_den.append(points_3d_density.cpu())
-            # densities.append(rgb_color.cpu())
-            densities.append(density_color.cpu())
-
-            if False:
-                # Semantic only
-                points_3d_only_semantic_colormap = points_3d[mask_only_sem.sum(dim=1).to(bool)]
-
-                if rgb_flag:
-                    sem_color_only = rgb[mask_only_sem.sum(dim=1).to(bool)]
-                else:
-                    sem_color_only = semantic[mask_only_sem.sum(dim=1).to(bool)]
-
-                # sem_color_only = torch.hstack(
-                #    [sem_color_only, torch.sigmoid(
-                #    semantic[mask_only_sem.sum(dim=1).to(bool)][:, 0]).unsqueeze(-1)])
-
-                points_only_sem.append(points_3d_only_semantic_colormap.cpu())
-                color_only_semantics.append(sem_color_only.cpu())
-
-            torch.cuda.empty_cache()
-            progress.advance(task, sampled_point_position.shape[0])
-
-    pcd_list = {}
-
-    # Semantic Colormap
-    points_sem_colormap = torch.cat(points_sem_colormap, dim=0)
-    semantic_colormap_rgbs = torch.cat(color_semantics_colormap, dim=0)
-
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points_sem_colormap.detach().double().cpu().numpy())
-    pcd.colors = o3d.utility.Vector3dVector(semantic_colormap_rgbs.detach().double().cpu().numpy()[:, :3])
-
-    if True:
-        T = np.eye(4)
-        T[:3, :4] = np.asarray(transform_json['transform'])[:3, :4]
-        T[:3, :3] = T[:3, :3]
-        T[:3, 3] *= -1
-
-        pcd = pcd.scale(1 / transform_json['scale'], center=np.asarray((0, 0, 0)))
-        pcd = pcd.scale(2, center=np.asarray((0, 0, 0)))
-
-    pcd_list.update(
-        {'semantic_colormap': {
-            'pcd': pcd,
-            'path': str(output_dir / config.load_dir.parts[-3] / 'semantic_colormap.ply')
-        }})
-
-    # Semantic
-    points_sem = torch.cat(points_sem, dim=0)
-    semantic_rgbs = torch.cat(color_semantics, dim=0)
-    if semantic_rgbs.shape[0] != 0:
-        semantic_rgbs /= semantic_rgbs.max()  # Normalize to visualize as point cloud
-
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points_sem.double().cpu().numpy())
-    pcd.colors = o3d.utility.Vector3dVector(semantic_rgbs.double().cpu().numpy()[:, :3])
-
-    if True:
-        T = np.eye(4)
-        T[:3, :4] = np.asarray(transform_json['transform'])[:3, :4]
-        T[:3, :3] = T[:3, :3]
-        # T = T[np.array([0, 2, 1, 3]), :]
-        T[:3, 3] *= -1
-        #
-        pcd = pcd.scale(1 / transform_json['scale'], center=np.asarray((0, 0, 0)))
-        pcd = pcd.scale(2, center=np.asarray((0, 0, 0)))
-
-    pcd_list.update({'semantic': {
-        'pcd': pcd,
-        'path': str(output_dir / config.load_dir.parts[-3] / 'semantic.ply')
-    }})
-
-    # Density
-    points_den = torch.cat(points_den, dim=0)
-    density_rgb = torch.cat(densities, dim=0)
-    if density_rgb.shape[0] != 0:
-        density_rgb /= density_rgb.max()  # Normalize to visualize as point cloud
-
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points_den.double().cpu().numpy())
-    pcd.colors = o3d.utility.Vector3dVector(density_rgb.double().cpu().numpy()[:, :3])
-
-    if True:
-        T = np.eye(4)
-        T[:3, :4] = np.asarray(transform_json['transform'])[:3, :4]
-        T[:3, :3] = T[:3, :3]
-        # T = T[np.array([0, 2, 1, 3]), :]
-        T[:3, 3] *= -1
-        #
-        pcd = pcd.scale(1 / transform_json['scale'], center=np.asarray((0, 0, 0)))
-        pcd = pcd.scale(2, center=np.asarray((0, 0, 0)))
-        # pcd = pcd.transform(T)
-    #
-    ## Cloud compare
-    # T = np.asarray([[0.994, -0.007, 0.118, -0.159],
-    #                [-0.008, 0.993, 0.127, -0.168],
-    #                [-0.118, -0.127, 0.986, 0.007],
-    #                [0.000, 0.000, 0.000, 1.000]])
-    # pcd = pcd.transform(T)
-
-    # o3d.visualization.draw_geometries([pcd])
-    pcd_list.update({'density': {
-        'pcd': pcd,
-        'path': str(output_dir / config.load_dir.parts[-3] / 'density.ply')
-    }})
-
-    return pcd_list

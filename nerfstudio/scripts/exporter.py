@@ -41,7 +41,7 @@ from nerfstudio.data.datamanagers.parallel_datamanager import ParallelDataManage
 from nerfstudio.data.datamanagers.random_cameras_datamanager import RandomCamerasDataManager
 from nerfstudio.data.scene_box import OrientedBox
 from nerfstudio.exporter import texture_utils, tsdf_utils
-from nerfstudio.exporter.exporter_utils import collect_camera_poses, generate_point_cloud, get_mesh_from_filename
+from nerfstudio.exporter.exporter_utils import collect_camera_poses, generate_point_cloud, generate_radiance_fields_cloud, get_mesh_from_filename
 from nerfstudio.exporter.marching_cubes import generate_mesh_with_multires_marching_cubes
 from nerfstudio.fields.sdf_field import SDFField  # noqa
 from nerfstudio.models.splatfacto import SplatfactoModel
@@ -94,6 +94,48 @@ def validate_pipeline(normal_method: str, normal_output_name: str, pipeline: Pip
             CONSOLE.print("[bold yellow]Exiting early.")
             sys.exit(1)
 
+@dataclass
+class ExportRadianceField(Exporter):
+    """Export the trained radiance field to a .pt file using torch from outputs dict."""
+
+    num_iterations: int = 1000000
+    """Number of iterations to run the evaluation for."""
+    num_rays_per_batch: int = 32768
+    """Number of rays to evaluate per batch. Decrease if you run out of memory."""
+
+    def main(self) -> None:
+        """Export radiance field."""
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(parents=True)
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"radiance_field_{timestamp}.pt"
+        output_path = self.output_dir / output_filename
+
+        _, pipeline, _, _ = eval_setup(self.load_config)
+
+        # Increase the batch size to speed up the evaluation
+        assert isinstance(
+            pipeline.datamanager,
+            (VanillaDataManager, ParallelDataManager, FullImageDatamanager, RandomCamerasDataManager),
+        )
+        assert pipeline.datamanager.train_pixel_sampler is not None
+        pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+
+        # Generate radiance field outputs
+        radiance_field_data = generate_radiance_fields_cloud(
+                                            pipeline,
+                                            self.num_iterations,
+                                            "rgb",
+                                            "depth",
+                                        )
+
+        # Save to file
+        output_path = self.output_dir / output_filename
+        torch.save(radiance_field_data, output_path)
+
+        CONSOLE.print(f"[bold green]:white_check_mark: Radiance field saved to {output_path}")
 
 @dataclass
 class ExportPointCloud(Exporter):
@@ -657,6 +699,7 @@ class ExportGaussianSplat(Exporter):
 
 Commands = tyro.conf.FlagConversionOff[
     Union[
+        Annotated[ExportRadianceField, tyro.conf.subcommand(name="radiance-field")],
         Annotated[ExportPointCloud, tyro.conf.subcommand(name="pointcloud")],
         Annotated[ExportTSDFMesh, tyro.conf.subcommand(name="tsdf")],
         Annotated[ExportPoissonMesh, tyro.conf.subcommand(name="poisson")],
