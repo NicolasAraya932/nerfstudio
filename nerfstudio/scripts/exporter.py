@@ -94,6 +94,71 @@ def validate_pipeline(normal_method: str, normal_output_name: str, pipeline: Pip
             CONSOLE.print("[bold yellow]Exiting early.")
             sys.exit(1)
 
+@dataclass
+class ExportRadianceField(Exporter):
+    """Export the trained radiance field to a .pt file using torch from outputs dict."""
+
+    num_rays_per_batch: int = 32768
+    """Number of rays to evaluate per batch. Decrease if you run out of memory."""
+
+    def main(self) -> None:
+        """Export radiance field."""
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(parents=True)
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"radiance_field_{timestamp}.pt"
+        output_path = self.output_dir / output_filename
+
+        _, pipeline, _, _ = eval_setup(self.load_config)
+
+        # Increase the batch size to speed up the evaluation
+        assert isinstance(
+            pipeline.datamanager,
+            (VanillaDataManager, ParallelDataManager, FullImageDatamanager, RandomCamerasDataManager),
+        )
+        assert pipeline.datamanager.train_pixel_sampler is not None
+        pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+
+        # Generate radiance field outputs
+        CONSOLE.print("Extracting radiance field...")
+        ray_bundle, _ = pipeline.datamanager.next_train(0)
+        outputs = pipeline.model(ray_bundle)
+
+        # Validate outputs
+        if "rgb" not in outputs or "depth" not in outputs:
+            raise ValueError("Expected keys 'rgb' and 'depth' not found in model outputs.")
+
+        # Save the radiance field outputs
+        radiance_field_data = {
+            "rgb": outputs["rgb"].detach().cpu().numpy(),
+            "accumulation": outputs["accumulation"].detach().cpu().numpy(),
+            "depth": outputs["depth"].detach().cpu().numpy(),
+            "origins": ray_bundle.origins.detach().cpu().numpy(),
+            "directions": ray_bundle.directions.detach().cpu().numpy(),
+            "pixel_area": ray_bundle.pixel_area.detach().cpu().numpy(),
+            "camera_indices": ray_bundle.camera_indices.detach().cpu().numpy(),
+            "nears": ray_bundle.nears.detach().cpu().numpy(),
+            "fars": ray_bundle.fars.detach().cpu().numpy(),
+            "metadata": ray_bundle.metadata,  # Handle metadata separately if needed
+            "times": ray_bundle.times.detach().cpu().numpy() if ray_bundle.times is not None else None,
+            "features": outputs.get("features", None),
+            "densities": outputs.get("densities", None),
+            "normals": outputs.get("normals", None),
+        }
+
+        # Handle metadata tensors
+        if isinstance(radiance_field_data["metadata"], dict):
+            for meta_key, meta_value in radiance_field_data["metadata"].items():
+                if isinstance(meta_value, torch.Tensor):
+                    radiance_field_data["metadata"][meta_key] = meta_value.detach().cpu().numpy()
+
+        # Save to file
+        output_path = self.output_dir / output_filename
+        torch.save(radiance_field_data, output_path)
+
+        CONSOLE.print(f"[bold green]:white_check_mark: Radiance field saved to {output_path}")
 
 @dataclass
 class ExportPointCloud(Exporter):
@@ -657,6 +722,7 @@ class ExportGaussianSplat(Exporter):
 
 Commands = tyro.conf.FlagConversionOff[
     Union[
+        Annotated[ExportRadianceField, tyro.conf.subcommand(name="radiance-field")],
         Annotated[ExportPointCloud, tyro.conf.subcommand(name="pointcloud")],
         Annotated[ExportTSDFMesh, tyro.conf.subcommand(name="tsdf")],
         Annotated[ExportPoissonMesh, tyro.conf.subcommand(name="poisson")],
