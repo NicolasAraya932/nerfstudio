@@ -80,7 +80,7 @@ def get_mesh_from_filename(filename: str, target_num_faces: Optional[int] = None
 def generate_radiance_fields_cloud(
     pipeline: Pipeline,
     num_points: int = 3500000,
-    rgb_output_name: str = "rgb",
+    rgb_output_name: str = "semantics",
     depth_output_name: str = "depth",
     normal_output_name: Optional[str] = None,
     crop_obb: Optional[OrientedBox] = None,
