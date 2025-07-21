@@ -3,7 +3,7 @@ ARG UBUNTU_VERSION=22.04
 ARG NVIDIA_CUDA_VERSION=11.8.0
 # CUDA architectures, required by Colmap and tiny-cuda-nn. Use >= 8.0 for faster TCNN.
 ARG CUDA_ARCHITECTURES="90;89;86;80;75;70;61"
-ARG NERFSTUDIO_VERSION=""
+ARG NERFSTUDIO_VERSION="fruitnerf"
 
 # Pull source either provided or from git.
 FROM scratch AS source_copy
@@ -121,6 +121,13 @@ RUN export TORCH_CUDA_ARCH_LIST="$(echo "$CUDA_ARCHITECTURES" | tr ';' '\n' | aw
     pip install --no-cache-dir /tmp/nerfstudio 'numpy<2.0.0' && \
     rm -rf /tmp/nerfstudios 
 
+
+# Build and install FruitProposal
+RUN git clone https://github.com/NicolasAraya932/FruitProposal.git /usr/local/lib/python3.10/dist-packages/FruitProposal && \
+    cd /usr/local/lib/python3.10/dist-packages/FruitProposal && \
+    pip install --no-cache-dir -e . && \
+    cd ~ 
+
 # Fix permissions
 RUN chmod -R go=u /usr/local/lib/python3.10 && \
     chmod -R go=u /build
@@ -133,10 +140,10 @@ ARG CUDA_ARCHITECTURES
 ARG NVIDIA_CUDA_VERSION
 ARG UBUNTU_VERSION
 
-LABEL org.opencontainers.image.source = "https://github.com/nerfstudio-project/nerfstudio"
-LABEL org.opencontainers.image.licenses = "Apache License 2.0"
+LABEL org.opencontainers.image.source="https://github.com/nerfstudio-project/nerfstudio"
+LABEL org.opencontainers.image.licenses="Apache License 2.0"
 LABEL org.opencontainers.image.base.name="docker.io/library/nvidia/cuda:${NVIDIA_CUDA_VERSION}-devel-ubuntu${UBUNTU_VERSION}"
-LABEL org.opencontainers.image.documentation = "https://docs.nerf.studio/"
+LABEL org.opencontainers.image.documentation="https://docs.nerf.studio/"
 
 # Minimal dependencies to run COLMAP binary compiled in the builder stage.
 # Note: this reduces the size of the final image considerably, since all the
@@ -168,8 +175,11 @@ COPY --from=builder /build/glomap/ /usr/local/
 COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
 COPY --from=builder /usr/local/bin/ns* /usr/local/bin/
 
+RUN curl -sSfL https://pixi.sh/install.sh | bash
+ENV PATH="/root/.pixi/bin:$PATH"
+
 # Install nerfstudio cli auto completion
 RUN /bin/bash -c 'ns-install-cli --mode install'
 
 # Bash as default entrypoint.
-CMD /bin/bash -l
+CMD ["/bin/bash", "-l"]
