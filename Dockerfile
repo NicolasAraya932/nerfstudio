@@ -178,7 +178,6 @@ ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
 
 COPY --from=builder /build/colmap/ /usr/local/
 COPY --from=builder /build/glomap/ /usr/local/
-COPY --from=builder /usr/local/cuda* /usr/local/
 COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
 COPY --from=builder /usr/local/bin/ns* /usr/local/bin/
 
