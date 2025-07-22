@@ -172,6 +172,7 @@ RUN apt-get update && \
 # Copy packages from builder stage.
 COPY --from=builder /build/colmap/ /usr/local/
 COPY --from=builder /build/glomap/ /usr/local/
+COPY --from=builder /usr/local/cuda* /usr/local/
 COPY --from=builder /usr/local/lib/python3.10/dist-packages/ /usr/local/lib/python3.10/dist-packages/
 COPY --from=builder /usr/local/bin/ns* /usr/local/bin/
 
