@@ -128,6 +128,12 @@ RUN git clone https://github.com/NicolasAraya932/FruitProposal.git /usr/local/li
     pip install --no-cache-dir -e . && \
     cd ~ 
 
+# Build and install RoICalculation
+RUN git clone https://github.com/NicolasAraya932/RoICalculation.git /usr/local/lib/python3.10/dist-packages/RoICalculation && \
+    cd /usr/local/lib/python3.10/dist-packages/RoICalculation && \
+    pip install --no-cache-dir -e . && \
+    cd ~ 
+
 # Fix permissions
 RUN chmod -R go=u /usr/local/lib/python3.10 && \
     chmod -R go=u /build
