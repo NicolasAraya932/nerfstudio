@@ -56,6 +56,7 @@ class Mesh:
     colors: Optional[Float[Tensor, "num_verts 3"]] = None
     """Colors of the mesh."""
 
+
 def get_mesh_from_pymeshlab_mesh(mesh: pymeshlab.Mesh) -> Mesh:  # type: ignore
     """Get a Mesh from a pymeshlab mesh.
     See https://pymeshlab.readthedocs.io/en/0.1.5/classes/mesh.html for details.
@@ -66,6 +67,7 @@ def get_mesh_from_pymeshlab_mesh(mesh: pymeshlab.Mesh) -> Mesh:  # type: ignore
         normals=torch.from_numpy(np.copy(mesh.vertex_normal_matrix())).float(),
         colors=torch.from_numpy(mesh.vertex_color_matrix()).float(),
     )
+
 
 def get_mesh_from_filename(filename: str, target_num_faces: Optional[int] = None) -> Mesh:
     """Get a Mesh from a filename."""
@@ -275,9 +277,9 @@ def generate_point_cloud(
                     CONSOLE.print(f"Please set --normal_output_name to one of: {outputs.keys()}", justify="center")
                     sys.exit(1)
                 normal = outputs[normal_output_name]
-                assert (
-                    torch.min(normal) >= 0.0 and torch.max(normal) <= 1.0
-                ), "Normal values from method output must be in [0, 1]"
+                assert torch.min(normal) >= 0.0 and torch.max(normal) <= 1.0, (
+                    "Normal values from method output must be in [0, 1]"
+                )
                 normal = (normal * 2.0) - 1.0
             point = ray_bundle.origins + ray_bundle.directions * depth
             view_direction = ray_bundle.directions
@@ -628,10 +630,10 @@ def collect_camera_poses(pipeline: VanillaPipeline) -> Tuple[List[Dict[str, Any]
     camera_optimizer = None
     if hasattr(pipeline.model, "camera_optimizer"):
         camera_optimizer = pipeline.model.camera_optimizer
+        assert isinstance(camera_optimizer, CameraOptimizer)
 
     train_frames = collect_camera_poses_for_dataset(train_dataset, camera_optimizer)
     # Note: returning original poses, even if --eval-mode=all
     eval_frames = collect_camera_poses_for_dataset(eval_dataset)
 
     return train_frames, eval_frames
-
