@@ -351,6 +351,91 @@ def generate_point_cloud(
 
     return pcd
 
+def generate_fruit_proposal_radiance_cloud(
+    pipeline: Pipeline,
+    num_points: int = 3500000,
+    semantic_output_name: str = "semantic_labels",
+    depth_output_name: str = "depth",
+) -> Dict[str, torch.Tensor]:
+    """Generate a radiance field dataset from a NeRF model.
+
+    Args:
+        pipeline: Pipeline to evaluate with.
+        num_points: Number of points to generate. May result in less if outlier removal is used.
+        semantic_output_name: Name of the semantic output.
+        depth_output_name: Name of the depth output.
+        normal_output_name: Name of the normal output.
+        crop_obb: Optional oriented bounding box to crop points.
+
+    Returns:
+        A dictionary containing all radiance field data.
+    """
+
+    # Initialize progress bar
+    progress = Progress(
+        TextColumn(":cloud: Computing Radiance Field :cloud:"),
+        BarColumn(),
+        TaskProgressColumn(show_speed=True),
+        TimeRemainingColumn(elapsed_when_finished=True, compact=True),
+        console=CONSOLE,
+    )
+
+    points          = []
+    accumulations   = []
+    depths          = []
+    origins         = []
+    directions      = []
+    semantics_labels = []
+
+    with progress as progress_bar:
+        task = progress_bar.add_task("Generating Radiance Field", total=num_points)
+        while not progress_bar.finished:
+
+            with torch.no_grad():
+                ray_bundle, _ = pipeline.datamanager.next_train(0)
+                assert isinstance(ray_bundle, RayBundle)
+                outputs = pipeline.model(ray_bundle)
+
+            if depth_output_name not in outputs:
+                CONSOLE.rule("Error", style="red")
+                CONSOLE.print(f"Could not find {depth_output_name} in the model outputs", justify="center")
+                CONSOLE.print(f"Please set --depth_output_name to one of: {outputs.keys()}", justify="center")
+                sys.exit(1)
+
+            if semantic_output_name not in outputs:
+                CONSOLE.rule("Error", style="red")
+                CONSOLE.print(f"Could not find {semantic_output_name} in the model outputs", justify="center")
+                CONSOLE.print(f"Please set --semantic_output_name to one of: {outputs.keys()}", justify="center")
+                sys.exit(1)
+
+            depth = outputs[depth_output_name]
+            semantic_labels = outputs[semantic_output_name]
+
+            point = ray_bundle.origins + ray_bundle.directions * depth
+
+            # Append data to lists
+            points.append(point.cpu())
+            semantics_labels.append(semantic_labels.cpu())
+            accumulations.append(outputs["accumulation"].cpu())
+            depths.append(outputs["depth"].cpu())
+            origins.append(ray_bundle.origins.cpu())
+            directions.append(ray_bundle.directions.cpu())
+
+            progress.advance(task, point.shape[0])
+
+    
+    # Combine lists into tensors on the CPU
+    radiance_field_data = {
+        "points": torch.cat(points, dim=0),
+        "accumulation": torch.cat(accumulations, dim=0),
+        "semantic_labels": torch.cat(semantics_labels, dim=0),
+        "depth": torch.cat(depths, dim=0),
+        "origins": torch.cat(origins, dim=0),
+        "directions": torch.cat(directions, dim=0),
+    }
+
+    return radiance_field_data
+
 def generate_semantics_sample_point_cloud(
     pipeline: Pipeline,
     num_points: int = 1000000,

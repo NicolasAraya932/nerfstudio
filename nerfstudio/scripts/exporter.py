@@ -39,13 +39,21 @@ from nerfstudio.data.datamanagers.base_datamanager import VanillaDataManager
 from nerfstudio.data.datamanagers.parallel_datamanager import ParallelDataManager
 from nerfstudio.data.scene_box import OrientedBox
 from nerfstudio.exporter import texture_utils, tsdf_utils
-from nerfstudio.exporter.exporter_utils import collect_camera_poses, generate_point_cloud, get_mesh_from_filename
+from nerfstudio.exporter.exporter_utils import (
+    collect_camera_poses,
+    generate_fruit_proposal_radiance_cloud,
+    generate_point_cloud,
+    get_mesh_from_filename,
+    generate_radiance_fields_cloud,
+)
 from nerfstudio.exporter.marching_cubes import generate_mesh_with_multires_marching_cubes
 from nerfstudio.fields.sdf_field import SDFField  # noqa
 from nerfstudio.models.splatfacto import SplatfactoModel
 from nerfstudio.pipelines.base_pipeline import Pipeline, VanillaPipeline
 from nerfstudio.utils.eval_utils import eval_setup
 from nerfstudio.utils.rich_utils import CONSOLE
+
+from fruit_proposal.data.fruit_proposal_datamanager import FruitDataManager
 
 
 @dataclass
@@ -116,10 +124,12 @@ class ExportRadianceField(Exporter):
         # Increase the batch size to speed up the evaluation
         assert isinstance(
             pipeline.datamanager,
-            (VanillaDataManager, ParallelDataManager, FullImageDatamanager, RandomCamerasDataManager),
+            (VanillaDataManager, ParallelDataManager),
         )
-        assert pipeline.datamanager.train_pixel_sampler is not None
-        pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+        if isinstance(pipeline.datamanager, VanillaDataManager):
+            assert pipeline.datamanager.train_pixel_sampler is not None
+            pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+
 
         # Generate radiance field outputs
         radiance_field_data = generate_radiance_fields_cloud(
@@ -134,6 +144,52 @@ class ExportRadianceField(Exporter):
         torch.save(radiance_field_data, output_path)
 
         CONSOLE.print(f"[bold green]:white_check_mark: Radiance field saved to {output_path}")
+
+@dataclass
+class ExportSemanticRadianceField(Exporter):
+    """Export the trained semantic radiance field to a .pt file using torch from outputs dict."""
+
+    num_iterations: int = 1500000
+    """Number of iterations to run the evaluation for."""
+    num_rays_per_batch: int = 8192
+    """Number of rays to evaluate per batch. Decrease if you run out of memory."""
+
+    def main(self) -> None:
+        """Export semantic radiance field."""
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(parents=True)
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"semantic_radiance_field_{timestamp}.pt"
+        output_path = self.output_dir / output_filename
+
+        _, pipeline, _, _ = eval_setup(self.load_config)
+
+        # Ensure consistent batch size
+        assert isinstance(
+            pipeline.datamanager,
+            (FruitDataManager),
+        )
+        assert isinstance(
+            pipeline.datamanager,
+            (VanillaDataManager, ParallelDataManager),
+        )
+        if isinstance(pipeline.datamanager, VanillaDataManager):
+            assert pipeline.datamanager.train_pixel_sampler is not None
+            pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+
+        outputs = generate_fruit_proposal_radiance_cloud(
+                                            pipeline=pipeline,
+                                            num_points=self.num_iterations,
+                                            semantic_output_name="semantic_labels",
+                                            depth_output_name="depth",
+                                        )
+
+        # Save to file
+        torch.save(outputs, output_path)
+
+        CONSOLE.print(f"[bold green]:white_check_mark: Semantic radiance field saved to {output_path}")
 
 @dataclass
 class ExportPointCloud(Exporter):
@@ -693,6 +749,7 @@ class ExportGaussianSplat(Exporter):
 
 Commands = tyro.conf.FlagConversionOff[
     Union[
+        Annotated[ExportSemanticRadianceField, tyro.conf.subcommand(name="semantic-field")],
         Annotated[ExportRadianceField, tyro.conf.subcommand(name="radiance-field")],
         Annotated[ExportPointCloud, tyro.conf.subcommand(name="pointcloud")],
         Annotated[ExportTSDFMesh, tyro.conf.subcommand(name="tsdf")],
