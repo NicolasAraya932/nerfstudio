@@ -264,6 +264,10 @@ class Trainer:
 
                         # time the forward pass
                         loss, loss_dict, metrics_dict = self.train_iteration(step)
+                        if "semantic_iou" in metrics_dict and "semantic_f1" in metrics_dict:
+                            if metrics_dict["semantic_iou"].item() > 0.99 and metrics_dict["semantic_f1"].item() > 0.99:
+                                self.stop_training = True
+                                
 
                         # training callbacks after the training iteration
                         for callback in self.callbacks:
