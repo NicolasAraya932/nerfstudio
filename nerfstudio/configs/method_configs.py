@@ -136,7 +136,7 @@ method_configs["fruit-proposal"] = TrainerConfig(
     method_name="fruit-proposal",
     steps_per_eval_batch=20,
     steps_per_save=20,
-    max_num_iterations=200,
+    max_num_iterations=20000000,
     mixed_precision=True,
     pipeline=VanillaPipelineConfig(
         datamanager=FruitDataManagerConfig(
@@ -153,11 +153,26 @@ method_configs["fruit-proposal"] = TrainerConfig(
             "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
             "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
         },
-        "camera_opt": None
     },
     viewer=ViewerConfig(num_rays_per_chunk=1 << 12),
     vis="viewer",
 )
+
+#     optimizers={
+#         "proposal_networks": {
+#             "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+#             "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+#         },
+#         "fields": {
+#             "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+#             "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+#         },
+#         "camera_opt": None
+#     },
+#     viewer=ViewerConfig(num_rays_per_chunk=1 << 12),
+#     vis="viewer",
+# )
+
 # method_configs["fruit-proposal_two"] = TrainerConfig(
 #     method_name="fruit-proposal",
 #     steps_per_eval_batch=20,
