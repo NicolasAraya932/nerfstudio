@@ -45,6 +45,7 @@ from nerfstudio.exporter.exporter_utils import (
     generate_point_cloud,
     get_mesh_from_filename,
     generate_radiance_fields_cloud,
+    export_voxel_alpha_grid
 )
 from nerfstudio.exporter.marching_cubes import generate_mesh_with_multires_marching_cubes
 from nerfstudio.fields.sdf_field import SDFField  # noqa
@@ -104,10 +105,16 @@ def validate_pipeline(normal_method: str, normal_output_name: str, pipeline: Pip
 class ExportRadianceField(Exporter):
     """Export the trained radiance field to a .pt file using torch from outputs dict."""
 
-    num_iterations: int = 1000000
+    num_iterations: int = 1500000
     """Number of iterations to run the evaluation for."""
     num_rays_per_batch: int = 32768
     """Number of rays to evaluate per batch. Decrease if you run out of memory."""
+    obb_center: Optional[Tuple[float, float, float]] = None
+    """Center of the oriented bounding box."""
+    obb_rotation: Optional[Tuple[float, float, float]] = None
+    """Rotation of the oriented bounding box. Expressed as RPY Euler angles in radians"""
+    obb_scale: Optional[Tuple[float, float, float]] = None
+    """Scale of the oriented bounding box along each axis."""
 
     def main(self) -> None:
         """Export radiance field."""
@@ -132,11 +139,13 @@ class ExportRadianceField(Exporter):
 
 
         # Generate radiance field outputs
+        crop_obb = None
+        if self.obb_center is not None and self.obb_rotation is not None and self.obb_scale is not None:
+            crop_obb = OrientedBox.from_params(self.obb_center, self.obb_rotation, self.obb_scale)
         radiance_field_data = generate_radiance_fields_cloud(
                                             pipeline,
                                             self.num_iterations,
-                                            "rgb",
-                                            "depth",
+                                            crop_obb=crop_obb
                                         )
 
         # Save to file
@@ -144,6 +153,53 @@ class ExportRadianceField(Exporter):
         torch.save(radiance_field_data, output_path)
 
         CONSOLE.print(f"[bold green]:white_check_mark: Radiance field saved to {output_path}")
+
+
+@dataclass
+class ExportVoxelsWithinOBB(Exporter):
+    """Export per-ROI voxel alpha grids (σ→α at voxel centers, no transmittance)."""
+
+    candidate_regions: Path
+    factor: float = 2.0
+    snap: int = 16
+    max_voxels: int = 200_000_000
+    assume_half_extents: bool = False
+    chunk_points: int = 1_000_000
+    save_npz_pattern: Optional[str] = None  # e.g. "roi_{i:02d}_alpha.npz"
+
+    def main(self) -> None:
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(parents=True)
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_path = self.output_dir / f"radiance_field_{timestamp}.pt"
+
+        # --- eval setup in inference mode ---
+        _, pipeline, _, _ = eval_setup(self.load_config, test_mode="inference")
+        pipeline.model.eval()
+
+        # Default NPZ pattern inside output_dir if not provided
+        npz_pattern = self.save_npz_pattern
+        if npz_pattern is None:
+            npz_pattern = str(self.output_dir / "roi_{i:02d}_alpha.npz")
+
+        # --- export (no rays involved) ---
+        with torch.no_grad():
+            radiance_field_data = export_voxel_alpha_grid(
+                pipeline,
+                candidate_regions=self.candidate_regions,
+                factor=self.factor,
+                snap=self.snap,
+                max_voxels=self.max_voxels,
+                assume_half_extents=self.assume_half_extents,
+                chunk_points=self.chunk_points,
+                save_npz_pattern=npz_pattern,
+            )
+
+        torch.save(radiance_field_data, output_path)
+        CONSOLE.print(f"[bold green]:white_check_mark: Radiance field saved to {output_path}")
+
 
 @dataclass
 class ExportSemanticRadianceField(Exporter):
@@ -153,6 +209,12 @@ class ExportSemanticRadianceField(Exporter):
     """Number of iterations to run the evaluation for."""
     num_rays_per_batch: int = 8192
     """Number of rays to evaluate per batch. Decrease if you run out of memory."""
+    obb_center: Optional[Tuple[float, float, float]] = None
+    """Center of the oriented bounding box."""
+    obb_rotation: Optional[Tuple[float, float, float]] = None
+    """Rotation of the oriented bounding box. Expressed as RPY Euler angles in radians"""
+    obb_scale: Optional[Tuple[float, float, float]] = None
+    """Scale of the oriented bounding box along each axis."""
 
     def main(self) -> None:
         """Export semantic radiance field."""
@@ -171,19 +233,19 @@ class ExportSemanticRadianceField(Exporter):
             pipeline.datamanager,
             (FruitDataManager),
         )
-        assert isinstance(
-            pipeline.datamanager,
-            (VanillaDataManager, ParallelDataManager),
-        )
         if isinstance(pipeline.datamanager, VanillaDataManager):
             assert pipeline.datamanager.train_pixel_sampler is not None
             pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
 
+        crop_obb = None
+        if self.obb_center is not None and self.obb_rotation is not None and self.obb_scale is not None:
+            crop_obb = OrientedBox.from_params(self.obb_center, self.obb_rotation, self.obb_scale)
         outputs = generate_fruit_proposal_radiance_cloud(
                                             pipeline=pipeline,
                                             num_points=self.num_iterations,
                                             semantic_output_name="semantic_labels",
                                             depth_output_name="depth",
+                                            crop_obb=crop_obb
                                         )
 
         # Save to file
@@ -749,6 +811,7 @@ class ExportGaussianSplat(Exporter):
 
 Commands = tyro.conf.FlagConversionOff[
     Union[
+        Annotated[ExportVoxelsWithinOBB, tyro.conf.subcommand(name="candidate-regions")],
         Annotated[ExportSemanticRadianceField, tyro.conf.subcommand(name="semantic-field")],
         Annotated[ExportRadianceField, tyro.conf.subcommand(name="radiance-field")],
         Annotated[ExportPointCloud, tyro.conf.subcommand(name="pointcloud")],

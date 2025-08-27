@@ -21,6 +21,7 @@ from __future__ import annotations
 import sys
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from pathlib import Path
 
 import numpy as np
 import pymeshlab
@@ -79,11 +80,185 @@ def get_mesh_from_filename(filename: str, target_num_faces: Optional[int] = None
     mesh = ms.current_mesh()
     return get_mesh_from_pymeshlab_mesh(mesh)
 
+def common_resolution_from_largest_aabb(
+    aabbs: List[OrientedBox],  # [(min3,max3),...]
+    n_points_ref: int,
+    factor: float = 2.0,     # UDPC = factor * n_points_ref
+    snap: int = 16,          # snap each axis to nearest multiple (8/16)
+    max_voxels: int = 200_000_000  # safety cap
+) -> Tuple[int,int,int]:
+    """
+        The volume of the Candidate Region is defined as the multiplication of
+        each dimension. V = Lx*Ly*Lz
+
+        The objective is to obtain the shape of each voxel and axes proportional to physical extents.
+
+        With k as the scale of a voxel, we can express the volume of the grid in terms of k:
+
+        k^3*Lx*Ly*Lz approx N_grid
+
+        k = (N_grid/(Lx*Ly*Lz))^(1/3)
+
+        Then the number of voxels along each axis is:
+        Dx = ⌈kLx⌉,  Dy = ⌈kLy⌉,  Dz = ⌈kLz⌉
+    """
+
+    sizes = []
+    volumes = []
+
+    # pick largest volume AABB
+    for aabb in aabbs:
+        S = aabb.S.detach().cpu().numpy() if isinstance(aabb.S, torch.Tensor) else aabb.S
+        Lx, Ly, Lz = float(S[0]), float(S[1]), float(S[2])
+        eps = 1e-12
+        V = max(Lx*Ly*Lz, eps)
+        sizes.append((Lx, Ly, Lz))
+        volumes.append(V)
+    
+    max_idx = int(np.argmax(volumes))
+    Lx, Ly, Lz = sizes[max_idx]
+    V = volumes[max_idx]
+
+    N_udpc = max(int(factor * n_points_ref), 1)
+    k = (N_udpc / V) ** (1.0/3.0)
+
+    Dx = max(1, int(np.ceil(k * Lx)))
+    Dy = max(1, int(np.ceil(k * Ly)))
+    Dz = max(1, int(np.ceil(k * Lz)))
+
+    # snap to multiples for CNN friendliness
+    def snap_to(v, m): return max(m, int(np.ceil(v / m) * m))
+    Dx, Dy, Dz = snap_to(Dx, snap), snap_to(Dy, snap), snap_to(Dz, snap)
+
+    # safety cap
+    total = Dx * Dy * Dz
+    if total > max_voxels:
+        scale = (max_voxels / float(total)) ** (1.0/3.0)
+        Dx = snap_to(max(1, int(Dx * scale)), snap)
+        Dy = snap_to(max(1, int(Dy * scale)), snap)
+        Dz = snap_to(max(1, int(Dz * scale)), snap)
+
+    return Dx, Dy, Dz
+
+@torch.no_grad()
+def _query_sigma_field(pipeline, P_world: torch.Tensor) -> torch.Tensor:
+    """
+    Query σ at arbitrary world positions P_world: [N,3] -> [N]
+    Tries field.density_fn; fallback to get_density with degenerate RaySamples.
+    """
+    field = pipeline.model.field
+    if hasattr(field, "density_fn") and callable(field.density_fn):
+        return field.density_fn(P_world).squeeze(-1)
+
+    # Fallback: build degenerate RaySamples (starts==ends) and call get_density
+    from nerfstudio.model_components.ray_samplers import Frustums, RaySamples
+    B = P_world.shape[0]
+    zeros = torch.zeros(B, 1, device=P_world.device, dtype=P_world.dtype)
+    fr = Frustums(
+        origins=P_world,
+        directions=torch.zeros_like(P_world),
+        starts=zeros, ends=zeros,
+        pixel_area=torch.ones(B,1, device=P_world.device, dtype=P_world.dtype),
+    )
+    rs = RaySamples(frustums=fr)
+    sigma, _ = field.get_density(rs)   # -> [B,1]
+    return sigma.squeeze(-1)
+
+@torch.no_grad()
+def export_voxel_alpha_grid(
+    pipeline,
+    candidate_regions: Path,
+    factor: float = 2.0,            # ~ target total voxels ≈ factor * num_points_ref
+    snap: int = 16,
+    max_voxels: int = 200_000_000,
+    assume_half_extents: bool = False,
+    chunk_points: int = 1_000_000,
+    save_npz_pattern: Optional[str] = None,  # e.g. "roi_{i:02d}_alpha.npz"
+) -> Dict[str, List]:
+    """
+    For each OrientedBox in candidate_regions, sample σ at voxel centers on a COMMON resolution
+    derived from the largest ROI, convert to α, and return a list of grids and metadata.
+    """
+    device = pipeline.device
+    AABBS: List[OrientedBox] = torch.load(candidate_regions)
+    if not all(hasattr(a, "S") or hasattr(a, "size") or hasattr(a, "extents") for a in AABBS):
+        CONSOLE.rule("Error", style="red")
+        CONSOLE.print("export_voxel_alpha_grid() expects OrientedBox objects with S/size/extents.", justify="center")
+        sys.exit(1)
+
+    # You were reading a radiance_field_cloud just to get N. We can just use number of rays * samples
+    # or pick a sane reference like 1e6. If you still prefer, pass n_points_ref explicitly.
+    n_points_ref = 1_000_000
+
+    # Common resolution from the largest ROI
+    Dx, Dy, Dz = common_resolution_from_largest_aabb(
+        AABBS, n_points_ref=n_points_ref, factor=factor, snap=snap,
+        max_voxels=max_voxels, assume_half_extents=assume_half_extents
+    )
+
+    grids_alpha: List[torch.Tensor] = []
+    metas: List[Dict] = []
+
+    for i, obb in enumerate(AABBS):
+        C, R, L = obb._extract_obb_components()          # world
+        if assume_half_extents:
+            L = 2.0 * L
+        Lx, Ly, Lz = L.tolist()
+
+        # Per-ROI spacings (these *will* match the physical extents since Dx,Dy,Dz are fixed)
+        dx, dy, dz = Lx/Dx, Ly/Dy, Lz/Dz
+        Delta = float((dx + dy + dz) / 3.0)             # used in α = 1 - exp(-σΔ)
+
+        # Local grid centers in the OBB frame: [-L/2, L/2] with Dx,Dy,Dz cells
+        xs = (-0.5 + (torch.arange(Dx, device=device) + 0.5) / Dx) * Lx  # [Dx]
+        ys = (-0.5 + (torch.arange(Dy, device=device) + 0.5) / Dy) * Ly  # [Dy]
+        zs = (-0.5 + (torch.arange(Dz, device=device) + 0.5) / Dz) * Lz  # [Dz]
+
+        # We’ll iterate over Z to limit memory
+        alpha_zi = torch.zeros((Dz, Dy, Dx), dtype=torch.float32, device=device)
+
+        for iz in range(Dz):
+            Z = zs[iz].expand(Dy, Dx)                                 # [Dy,Dx]
+            Y, X = torch.meshgrid(ys, xs, indexing="ij")              # [Dy,Dx] each
+            P_local = torch.stack([X, Y, Z], dim=-1).reshape(-1, 3)   # [Dy*Dx,3]
+
+            # World transform: P_world = C + R @ P_local
+            P_world = (P_local @ R.T) + C[None, :]
+
+            # Chunked σ query
+            sigmas = []
+            for s in range(0, P_world.shape[0], chunk_points):
+                sigmas.append(_query_sigma_field(pipeline, P_world[s:s+chunk_points]))
+            sigma_slice = torch.cat(sigmas, dim=0).view(Dy, Dx)       # [Dy,Dx]
+
+            # α = 1 - exp(-σΔ) (no transmittance)
+            alpha_slice = 1.0 - torch.exp(-sigma_slice * Delta)
+            alpha_zi[iz] = alpha_slice
+
+        grids_alpha.append(alpha_zi.detach().cpu())
+
+        meta = {
+            "roi_index": i,
+            "center": np.array(C.detach().cpu()),
+            "rotation": np.array(R.detach().cpu()),
+            "lengths": np.array(L.detach().cpu()),   # side lengths
+            "resolution": (Dx, Dy, Dz),
+            "spacing": (dx, dy, dz),
+            "Delta": Delta,
+        }
+        metas.append(meta)
+
+        if save_npz_pattern is not None:
+            np.savez_compressed(save_npz_pattern.format(i=i),
+                                alpha=np.asarray(alpha_zi.cpu()),
+                                **meta)
+
+    return {"alpha_grids": grids_alpha, "meta": metas}
+
+
 def generate_radiance_fields_cloud(
     pipeline: Pipeline,
-    num_points: int = 3500000,
-    rgb_output_name: str = "semantics",
-    depth_output_name: str = "depth",
+    num_points: int = 1500000,
     normal_output_name: Optional[str] = None,
     crop_obb: Optional[OrientedBox] = None,
 ) -> Dict[str, torch.Tensor]:
@@ -113,13 +288,7 @@ def generate_radiance_fields_cloud(
     # Initialize lists to store outputs
     points = []
     rgbs = []
-    accumulations = []
-    depths = []
-    origins = []
-    directions = []
-    pixel_areas = []
     normals = []
-    view_directions = []
 
     with progress as progress_bar:
         task = progress_bar.add_task("Generating Radiance Field", total=num_points)
@@ -132,19 +301,13 @@ def generate_radiance_fields_cloud(
                 outputs = pipeline.model(ray_bundle)
 
             # Validate outputs
-            if rgb_output_name not in outputs:
+            if "weights" not in outputs:
                 CONSOLE.rule("Error", style="red")
-                CONSOLE.print(f"Could not find {rgb_output_name} in the model outputs", justify="center")
-                CONSOLE.print(f"Please set --rgb_output_name to one of: {outputs.keys()}", justify="center")
-                sys.exit(1)
-            if depth_output_name not in outputs:
-                CONSOLE.rule("Error", style="red")
-                CONSOLE.print(f"Could not find {depth_output_name} in the model outputs", justify="center")
-                CONSOLE.print(f"Please set --depth_output_name to one of: {outputs.keys()}", justify="center")
+                CONSOLE.print(f"Could not find weights in the model outputs", justify="center")
+                CONSOLE.print(f"Keep sure that you are using FruitProposal framework", justify="center")
                 sys.exit(1)
 
-            rgba = pipeline.model.get_rgba_image(outputs, rgb_output_name)
-            depth = outputs[depth_output_name]
+            rgba = pipeline.model.get_rgba_image(outputs, "rgb")
 
             if normal_output_name is not None:
                 if normal_output_name not in outputs:
@@ -158,50 +321,43 @@ def generate_radiance_fields_cloud(
                 ), "Normal values from method output must be in [0, 1]"
                 normal = (normal * 2.0) - 1.0
 
-            point = ray_bundle.origins + ray_bundle.directions * depth
-            view_direction = ray_bundle.directions
+            alpha = outputs["alpha"]      # [N,S]  (your "opacity_weights")
+            t_mid = outputs["t_mid"]      # [N,S]
+            max_alpha, idx = alpha.max(dim=-1, keepdim=True)   # [N,1], [N,1]
+            t_peak = torch.gather(t_mid, -1, idx).squeeze(-1)  # [N]
+            p_peak = ray_bundle.origins + ray_bundle.directions * t_peak[..., None]  # [N,3]
 
-            # Filter points with opacity lower than 0.01
-            mask = rgba[..., -1] > 0.01
-            point = point[mask]
-            view_direction = view_direction[mask]
-            rgb = rgba[mask][..., :3]
-            if normal is not None:
-                normal = normal[mask]
+            # keep = max_alpha.squeeze(-1) > 0.05
+            if normal_output_name is not None:
+                normal = outputs[normal_output_name]
+                normal = (normal * 2.0) - 1.0
+            # Apply keep to everything once
+            p_peak = p_peak     # [keep]
+            rgb = rgba[..., :3] # [keep]
+            if normal_output_name is not None:
+                normal = normal # [keep]
 
+            # Optional crop
             if crop_obb is not None:
-                mask = crop_obb.within(point)
-                point = point[mask]
-                rgb = rgb[mask]
-                view_direction = view_direction[mask]
-                if normal is not None:
-                    normal = normal[mask]
+                in_crop = crop_obb.within(p_peak)          # [M] boolean
+                p_peak = p_peak[in_crop]
+                rgb    = rgb[in_crop]
+                if normal_output_name is not None:
+                    normal = normal[in_crop]
 
             # Append data to lists
-            points.append(point.cpu())
+            points.append(p_peak.cpu())
             rgbs.append(rgb.cpu())
-            accumulations.append(outputs["accumulation"][mask].cpu())
-            depths.append(outputs["depth"][mask].cpu())
-            origins.append(ray_bundle.origins[mask].cpu())
-            directions.append(ray_bundle.directions[mask].cpu())
-            pixel_areas.append(ray_bundle.pixel_area[mask].cpu())
-            view_directions.append(view_direction.cpu())
 
             if normal is not None:
                 normals.append(normal.cpu())
 
-            progress.advance(task, point.shape[0])
+            progress.advance(task, p_peak.shape[0])
 
     # Combine lists into tensors on the CPU
     radiance_field_data = {
         "points": torch.cat(points, dim=0),
         "rgb": torch.cat(rgbs, dim=0),
-        "accumulation": torch.cat(accumulations, dim=0),
-        "depth": torch.cat(depths, dim=0),
-        "origins": torch.cat(origins, dim=0),
-        "directions": torch.cat(directions, dim=0),
-        "pixel_area": torch.cat(pixel_areas, dim=0),
-        "view_directions": torch.cat(view_directions, dim=0),
     }
 
     if normals:
@@ -215,7 +371,7 @@ def generate_point_cloud(
     remove_outliers: bool = True,
     estimate_normals: bool = False,
     reorient_normals: bool = False,
-    rgb_output_name: str = "rgb",
+    rgb_output_name: str = "semantic_labels", #"rgb",
     depth_output_name: str = "depth",
     normal_output_name: Optional[str] = None,
     crop_obb: Optional[OrientedBox] = None,
@@ -268,6 +424,7 @@ def generate_point_cloud(
                 CONSOLE.print(f"Could not find {depth_output_name} in the model outputs", justify="center")
                 CONSOLE.print(f"Please set --depth_output_name to one of: {outputs.keys()}", justify="center")
                 sys.exit(1)
+
             rgba = pipeline.model.get_rgba_image(outputs, rgb_output_name)
             depth = outputs[depth_output_name]
             if normal_output_name is not None:
@@ -353,9 +510,10 @@ def generate_point_cloud(
 
 def generate_fruit_proposal_radiance_cloud(
     pipeline: Pipeline,
-    num_points: int = 3500000,
+    num_points: int = 1500000,
     semantic_output_name: str = "semantic_labels",
     depth_output_name: str = "depth",
+    crop_obb: Optional[OrientedBox] = None,
 ) -> Dict[str, torch.Tensor]:
     """Generate a radiance field dataset from a NeRF model.
 
@@ -381,7 +539,6 @@ def generate_fruit_proposal_radiance_cloud(
     )
 
     points          = []
-    accumulations   = []
     depths          = []
     origins         = []
     directions      = []
@@ -408,26 +565,41 @@ def generate_fruit_proposal_radiance_cloud(
                 CONSOLE.print(f"Please set --semantic_output_name to one of: {outputs.keys()}", justify="center")
                 sys.exit(1)
 
-            depth = outputs[depth_output_name]
-            semantic_labels = outputs[semantic_output_name]
+            if "weights" not in outputs:
+                CONSOLE.rule("Error", style="red")
+                CONSOLE.print(f"Could not find weights in the model outputs", justify="center")
+                CONSOLE.print(f"Keep sure that you are using FruitProposal framework", justify="center")
+                sys.exit(1)
 
-            point = ray_bundle.origins + ray_bundle.directions * depth
+            semantic_labels = outputs[semantic_output_name]             # [N]
+            weights         = outputs["weights"]                        # [N,S]
+            t_mid           = outputs["t_mid"].squeeze(-1)              # TODO delete           # [N,S]
 
-            # Append data to lists
-            points.append(point.cpu())
+            # per-sample 3D positions: [N,S,3]
+            # per-ray weighted depth
+            # weights: [N,S], t_mid: [N,S]
+            idx = torch.argmax(weights, dim=-1, keepdim=True)             # [N,1]
+            t_peak = torch.gather(t_mid, -1, idx).squeeze(-1)             # [N]
+            p_peak = ray_bundle.origins + ray_bundle.directions * t_peak[..., None]  # [N,3]
+
+            mask = (weights.max(dim=-1).values > 0.85)                    # optional
+            p_peak = p_peak[mask]
+            if crop_obb is not None:
+                mask = crop_obb.within(p_peak)
+                p_peak = p_peak[mask]
+
+            # per-ray mask, then apply to *all* per-ray arrays
+            points.append(p_peak.cpu())
             semantics_labels.append(semantic_labels.cpu())
-            accumulations.append(outputs["accumulation"].cpu())
             depths.append(outputs["depth"].cpu())
             origins.append(ray_bundle.origins.cpu())
             directions.append(ray_bundle.directions.cpu())
 
-            progress.advance(task, point.shape[0])
+            progress.advance(task, p_peak.shape[0])
 
-    
     # Combine lists into tensors on the CPU
     radiance_field_data = {
         "points": torch.cat(points, dim=0),
-        "accumulation": torch.cat(accumulations, dim=0),
         "semantic_labels": torch.cat(semantics_labels, dim=0),
         "depth": torch.cat(depths, dim=0),
         "origins": torch.cat(origins, dim=0),
