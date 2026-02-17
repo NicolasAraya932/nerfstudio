@@ -237,6 +237,7 @@ class Trainer:
             self.pipeline.datamanager.train_dataparser_outputs.save_dataparser_transform(  # type: ignore
                 self.base_dir / "dataparser_transforms.json"
             )
+        
 
         self._init_viewer_state()
         with TimeWriter(writer, EventName.TOTAL_TRAIN_TIME):
@@ -264,10 +265,39 @@ class Trainer:
 
                         # time the forward pass
                         loss, loss_dict, metrics_dict = self.train_iteration(step)
-                        if "semantic_iou" in metrics_dict and "semantic_f1" in metrics_dict:
-                            if metrics_dict["semantic_iou"].item() > 0.99 and metrics_dict["semantic_f1"].item() > 0.99:
-                                self.stop_training = True
-                                
+
+                        output_path_last = f"{str(self.config.output_dir)}/{str(self.config.experiment_name)}/{str(self.config.method_name)}/{str(self.config.timestamp)}/last_metrics.npy"
+                        output_path_all = f"{str(self.config.output_dir)}/{str(self.config.experiment_name)}/{str(self.config.method_name)}/{str(self.config.timestamp)}/all_metrics.txt"
+
+                        if "semantic_accuracy" in metrics_dict:
+
+                            semantic_iou = metrics_dict["semantic_iou"].item()
+                            semantic_f1 = metrics_dict["semantic_f1"].item()
+                            semantic_accuracy = metrics_dict["semantic_accuracy"].item()
+
+                            with open(output_path_all, "a") as f:
+                                f.write(f"{semantic_iou}\t{semantic_f1}\t{semantic_accuracy}\t{self.step}\n")
+
+                            # if semantic_iou > 0.9 and semantic_f1 > 0.9:
+                            #     import numpy as np
+                            #     np.save(
+                            #         str(output_path_last),
+                            #         np.array([semantic_iou, semantic_f1, self.step]),
+                            #         )
+                            #     self.stop_training = True
+                            if self.step >= self.config.max_num_iterations-1:
+                                import numpy as np
+                                np.save(
+                                    str(output_path_last),
+                                    np.array([semantic_iou, semantic_f1, self.step])
+                                    )
+                        # else:
+                        #     import numpy as np
+                        #     metrics_array = np.array([metrics_dict[metric].item() for metric in metrics_dict.keys()])
+                        #     np.save(
+                        #         str(output_path_last),
+                        #         metrics_array,
+                        #     )
 
                         # training callbacks after the training iteration
                         for callback in self.callbacks:

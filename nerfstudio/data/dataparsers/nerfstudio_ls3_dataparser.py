@@ -1,3 +1,4 @@
+
 # Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,7 +18,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, Optional, Tuple, Type
+from typing import Any, Literal, Optional, Tuple, Type
 
 import numpy as np
 import torch
@@ -40,10 +41,10 @@ MAX_AUTO_RESOLUTION = 1600
 
 
 @dataclass
-class NerfstudioDataParserConfig(DataParserConfig):
+class NerfstudioLs3DataParserConfig(DataParserConfig):
     """Nerfstudio dataset config"""
 
-    _target: Type = field(default_factory=lambda: Nerfstudio)
+    _target: Type = field(default_factory=lambda: NerfstudioLs3)
     """target class to instantiate"""
     data: Path = Path()
     """Directory or explicit json file path specifying location of data."""
@@ -53,7 +54,7 @@ class NerfstudioDataParserConfig(DataParserConfig):
     """How much to downscale images. If not set, images are chosen such that the max dimension is <1600px."""
     scene_scale: float = 1.0
     """How much to scale the region of interest by."""
-    orientation_method: Literal["pca", "up", "vertical", "none"] = "none"
+    orientation_method: Literal["pca", "up", "vertical", "none"] = "up"
     """The method to use for orientation."""
     center_method: Literal["poses", "focus", "none"] = "poses"
     """The method to use to center the poses."""
@@ -77,13 +78,15 @@ class NerfstudioDataParserConfig(DataParserConfig):
     """Replace the unknown pixels with this color. Relevant if you have a mask but still sample everywhere."""
     load_3D_points: bool = False
     """Whether to load the 3D points from the colmap reconstruction."""
+    scene_box: Optional[Tuple[Tuple[float, float, float], Tuple[float, float, float]]] = None
+    """Optional axis-aligned scene box ((min_x, min_y, min_z), (max_x, max_y, max_z))."""
 
 
 @dataclass
-class Nerfstudio(DataParser):
+class NerfstudioLs3(DataParser):
     """Nerfstudio DatasetParser"""
 
-    config: NerfstudioDataParserConfig
+    config: NerfstudioLs3DataParserConfig
     downscale_factor: Optional[int] = None
 
     def _generate_dataparser_outputs(self, split="train"):
@@ -234,6 +237,7 @@ class Nerfstudio(DataParser):
             orientation_method = self.config.orientation_method
 
         mean_origin_override = self._load_mean_origin_override(data_dir)
+        # TODO: NICO
         poses = torch.from_numpy(np.array(poses).astype(np.float32))
         poses, transform_matrix = camera_utils.auto_orient_and_center_poses(
             poses,
@@ -249,6 +253,7 @@ class Nerfstudio(DataParser):
         scale_factor *= self.config.scale_factor
 
         poses[:, :3, 3] *= scale_factor
+        all_poses = poses.clone()
 
         # Choose image_filenames and poses based on split, but after auto orient and scaling the poses.
         image_filenames = [image_filenames[i] for i in indices]
@@ -258,14 +263,7 @@ class Nerfstudio(DataParser):
         idx_tensor = torch.tensor(indices, dtype=torch.long)
         poses = poses[idx_tensor]
 
-        # in x,y,z order
-        # assumes that the scene is centered at the origin
-        aabb_scale = self.config.scene_scale
-        scene_box = SceneBox(
-            aabb=torch.tensor(
-                [[-aabb_scale, -aabb_scale, -aabb_scale], [aabb_scale, aabb_scale, aabb_scale]], dtype=torch.float32
-            )
-        )
+        scene_box = self._build_scene_box(meta, all_poses, transform_matrix, scale_factor, data_dir)
 
         if "camera_model" in meta:
             camera_type = CAMERA_MODEL_TO_TYPE[meta["camera_model"]]
@@ -421,11 +419,71 @@ class Nerfstudio(DataParser):
         )
         return dataparser_outputs
 
+    def _build_scene_box(
+        self,
+        meta: dict,
+        poses: torch.Tensor,
+        transform_matrix: torch.Tensor,
+        scale_factor: float,
+        data_dir: Path,
+    ) -> SceneBox:
+        """Construct the scene box from config, archives, dataset metadata, or an inferred AABB."""
+
+        def _transform_aabb_to_output(aabb_tensor: torch.Tensor) -> torch.Tensor:
+            """Apply the orientation/centering transform and pose scaling to an input AABB."""
+            corner_grid = torch.stack(
+                torch.meshgrid(*[aabb_tensor[:, i] for i in range(3)], indexing="ij"), dim=-1
+            ).reshape(-1, 3)
+            corners = torch.cat(
+                [
+                    corner_grid,
+                    torch.ones((corner_grid.shape[0], 1), device=aabb_tensor.device, dtype=aabb_tensor.dtype),
+                ],
+                dim=-1,
+            )
+            transformed = (corners @ transform_matrix.T)[:, :3] * scale_factor
+            new_min, _ = transformed.min(dim=0)
+            new_max, _ = transformed.max(dim=0)
+            return torch.stack([new_min, new_max], dim=0)
+
+        if self.config.scene_box is not None:
+            return SceneBox(aabb=self._scene_box_tensor_from_source(self.config.scene_box))
+
+        archive_aabb = self._load_scene_box_from_archive(data_dir)
+        if archive_aabb is not None:
+            return SceneBox(aabb=archive_aabb)
+
+        meta_scene_box = meta.get("scene_box")
+        if meta_scene_box is not None:
+            if isinstance(meta_scene_box, dict):
+                if "aabb" in meta_scene_box:
+                    meta_scene_box = meta_scene_box["aabb"]
+                elif "min" in meta_scene_box and "max" in meta_scene_box:
+                    meta_scene_box = [meta_scene_box["min"], meta_scene_box["max"]]
+            try:
+                meta_aabb = self._scene_box_tensor_from_source(meta_scene_box)
+                meta_aabb = _transform_aabb_to_output(meta_aabb)
+                return SceneBox(aabb=meta_aabb)
+            except (TypeError, ValueError):
+                CONSOLE.log("[yellow] Unable to parse scene_box from transforms.json; falling back to scene_scale.")
+
+        if poses.numel() > 0:
+            inferred_scene_box = SceneBox.from_camera_poses(poses, 1.0)
+            inferred_scene_box.aabb *= self.config.scene_scale
+            return inferred_scene_box
+
+        aabb_scale = self.config.scene_scale
+        return SceneBox(
+            aabb=torch.tensor(
+                [[-aabb_scale, -aabb_scale, -aabb_scale], [aabb_scale, aabb_scale, aabb_scale]], dtype=torch.float32
+            )
+        )
+
     def _load_mean_origin_override(self, data_dir: Path) -> Optional[torch.Tensor]:
         """Load a stored mean origin vector if available."""
         candidate_paths = [
-            data_dir / "mean_origin_outdoor.txt",
-            Path("/workspace/Desktop/DATASETS/META/mean_origin_outdoor.txt"),
+            data_dir / "mean_origin.txt",
+            Path("/workspace/Desktop/DATASETS/META/mean_origin.txt"),
         ]
         for mean_origin_path in candidate_paths:
             if not mean_origin_path.exists():
@@ -446,6 +504,69 @@ class Nerfstudio(DataParser):
             return torch.tensor(loaded[:3], dtype=torch.float32)
 
         return None
+
+    def _load_scene_box_from_archive(self, data_dir: Path) -> Optional[torch.Tensor]:
+        """Load scene box data from auxiliary archives co-located with the dataset."""
+        if not data_dir.exists():
+            return None
+
+        supported_extensions = (".pt", ".pth", ".npy", ".npz", ".json")
+        candidates = [data_dir / f"scene_box{ext}" for ext in supported_extensions]
+        candidates += sorted(
+            path for path in data_dir.glob("scene_box*") if path.suffix in supported_extensions
+        )
+
+        seen = set()
+        for candidate in candidates:
+            if candidate in seen or not candidate.exists() or candidate.is_dir():
+                continue
+            seen.add(candidate)
+
+            try:
+                if candidate.suffix in (".pt", ".pth"):
+                    archive = torch.load(candidate, map_location="cpu")
+                elif candidate.suffix == ".npy":
+                    archive = np.load(candidate)
+                elif candidate.suffix == ".npz":
+                    with np.load(candidate) as npz_archive:
+                        if "aabb" in npz_archive:
+                            archive = npz_archive["aabb"]
+                        elif len(npz_archive.files) > 0:
+                            archive = npz_archive[npz_archive.files[0]]
+                        else:
+                            CONSOLE.log(f"[yellow] scene_box archive {candidate} is empty.")
+                            continue
+                elif candidate.suffix == ".json":
+                    archive = load_from_json(candidate)
+                else:
+                    continue
+                return self._scene_box_tensor_from_source(archive)
+            except Exception as exc:  # pylint: disable=broad-except
+                CONSOLE.log(f"[yellow] Failed to load scene_box archive {candidate}: {exc}")
+
+        return None
+
+    @staticmethod
+    def _scene_box_tensor_from_source(source: Any) -> torch.Tensor:
+        """Convert various scene box representations to a (2, 3) tensor."""
+        if isinstance(source, SceneBox):
+            aabb = source.aabb
+        elif isinstance(source, torch.Tensor):
+            aabb = source
+        elif isinstance(source, dict):
+            if "aabb" in source:
+                return NerfstudioLs3._scene_box_tensor_from_source(source["aabb"])
+            if "min" in source and "max" in source:
+                return NerfstudioLs3._scene_box_tensor_from_source([source["min"], source["max"]])
+            raise ValueError("Scene box dictionary is missing 'aabb' or ('min', 'max') keys.")
+        else:
+            aabb = torch.tensor(source, dtype=torch.float32)
+
+        if aabb.ndim == 1 and aabb.numel() == 6:
+            aabb = aabb.view(2, 3)
+        if aabb.shape != (2, 3):
+            raise ValueError(f"Scene box AABB must be shape (2, 3), got {tuple(aabb.shape)}.")
+        return aabb.to(dtype=torch.float32)
 
     def _load_3D_points(self, ply_file_path: Path, transform_matrix: torch.Tensor, scale_factor: float):
         """Loads point clouds positions and colors from .ply

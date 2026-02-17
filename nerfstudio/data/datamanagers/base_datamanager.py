@@ -472,6 +472,8 @@ class VanillaDataManager(DataManager, Generic[TDataset]):
         )
         self.iter_train_image_dataloader = iter(self.train_image_dataloader)
         self.train_pixel_sampler = self._get_pixel_sampler(self.train_dataset, self.config.train_num_rays_per_batch)
+
+        # TODO: @NICO CREATE A CR DATAMANAGER TO ADD CUSTOM RAYS
         self.train_ray_generator = RayGenerator(self.train_dataset.cameras.to(self.device))
 
     def setup_eval(self):
@@ -490,6 +492,8 @@ class VanillaDataManager(DataManager, Generic[TDataset]):
         )
         self.iter_eval_image_dataloader = iter(self.eval_image_dataloader)
         self.eval_pixel_sampler = self._get_pixel_sampler(self.eval_dataset, self.config.eval_num_rays_per_batch)
+
+        # TODO: @NICO CREATE A CR DATAMANAGER TO ADD CUSTOM RAYS
         self.eval_ray_generator = RayGenerator(self.eval_dataset.cameras.to(self.device))
         # for loading full images
         self.fixed_indices_eval_dataloader = FixedIndicesEvalDataloader(

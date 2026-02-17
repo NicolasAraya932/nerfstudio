@@ -116,6 +116,11 @@ class ParallelDataManager(DataManager, Generic[TDataset]):
         # Setup our collate function (same as base_datamanager.py)
         if self.train_dataparser_outputs is not None:
             cameras = self.train_dataparser_outputs.cameras
+            # parallel_datamanager.py (inside __init__, after get_dataparser_outputs)
+            if local_rank == 0:
+                first = self.train_dataparser_outputs.image_filenames[:5]
+                CONSOLE.log(f"First train images: {[p.name for p in first]}")
+
             if len(cameras) > 1:
                 for i in range(1, len(cameras)):
                     if cameras[0].width != cameras[i].width or cameras[0].height != cameras[i].height or True:

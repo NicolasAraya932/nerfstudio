@@ -134,8 +134,9 @@ method_configs["roi_calculation"] = TrainerConfig(
 
 method_configs["fruit-proposal"] = TrainerConfig(
     method_name="fruit-proposal",
-    steps_per_eval_batch=20,
-    steps_per_save=20,
+    steps_per_eval_batch=100,
+    steps_per_eval_image=100,
+    steps_per_save=100,
     max_num_iterations=30000,
     mixed_precision=True,
     pipeline=VanillaPipelineConfig(
@@ -222,8 +223,8 @@ method_configs["nerfacto"] = TrainerConfig(
     pipeline=VanillaPipelineConfig(
         datamanager=ParallelDataManagerConfig(
             dataparser=NerfstudioDataParserConfig(),
-            train_num_rays_per_batch=4096,
-            eval_num_rays_per_batch=4096,
+            train_num_rays_per_batch=8192,
+            eval_num_rays_per_batch=8192,
         ),
         model=NerfactoModelConfig(
             eval_num_rays_per_chunk=1 << 15,

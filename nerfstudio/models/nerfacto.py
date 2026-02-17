@@ -47,6 +47,18 @@ from nerfstudio.model_components.shaders import NormalsShader
 from nerfstudio.models.base_model import Model, ModelConfig
 from nerfstudio.utils import colormaps
 
+def stats(name, t):
+    t = t.detach()
+    print(
+        name,
+        "shape", tuple(t.shape),
+        "dtype", t.dtype,
+        "min", float(t.min()),
+        "max", float(t.max()),
+        "mean", float(t.mean()),
+        "frac>0.5", float((t > 0.5).float().mean()),
+        "frac>0", float((t > 0.0).float().mean()),
+    )
 
 @dataclass
 class NerfactoModelConfig(ModelConfig):
@@ -55,15 +67,15 @@ class NerfactoModelConfig(ModelConfig):
     _target: Type = field(default_factory=lambda: NerfactoModel)
     near_plane: float = 0.05
     """How far along the ray to start sampling."""
-    far_plane: float = 1000.0
+    far_plane: float = 2.0
     """How far along the ray to stop sampling."""
     background_color: Literal["random", "last_sample", "black", "white"] = "last_sample"
     """Whether to randomize the background color."""
-    hidden_dim: int = 64
+    hidden_dim: int = 128 #64
     """Dimension of hidden layers"""
-    hidden_dim_color: int = 64
+    hidden_dim_color: int = 128 #64
     """Dimension of hidden layers for color network"""
-    hidden_dim_transient: int = 64
+    hidden_dim_transient: int = 128 #64
     """Dimension of hidden layers for transient network"""
     num_levels: int = 16
     """Number of levels of the hashmap for the base mlp."""
@@ -124,7 +136,7 @@ class NerfactoModelConfig(ModelConfig):
     """Use gradient scaler where the gradients are lower for points closer to the camera."""
     implementation: Literal["tcnn", "torch"] = "tcnn"
     """Which implementation to use for the model."""
-    appearance_embed_dim: int = 32
+    appearance_embed_dim: int = 128 #32
     """Dimension of the appearance embedding."""
     average_init_density: float = 1.0
     """Average initial density output from MLP. """
@@ -314,12 +326,15 @@ class NerfactoModel(Model):
             depth = self.renderer_depth(weights=weights, ray_samples=ray_samples)
         expected_depth = self.renderer_expected_depth(weights=weights, ray_samples=ray_samples)
         accumulation = self.renderer_accumulation(weights=weights)
+        t_mid = 0.5 * (ray_samples.frustums.starts + ray_samples.frustums.ends)  # [N,S,1] or [N,S]
 
         outputs = {
             "rgb": rgb,
             "accumulation": accumulation,
             "depth": depth,
             "expected_depth": expected_depth,
+            "density": field_outputs[FieldHeadNames.DENSITY],
+            "t_mid": t_mid
         }
 
         if self.config.predict_normals:
@@ -367,6 +382,7 @@ class NerfactoModel(Model):
             pred_image=outputs["rgb"],
             pred_accumulation=outputs["accumulation"],
             gt_image=image,
+
         )
 
         loss_dict["rgb_loss"] = self.rgb_loss(gt_rgb, pred_rgb)

@@ -126,6 +126,28 @@ class RaySamples(TensorDataclass):
     times: Optional[Float[Tensor, "*batch 1"]] = None
     """Times at which rays are sampled"""
 
+    def get_alpha(self, densities: Float[Tensor, "*batch num_samples 1"], deltas: Optional[Float[Tensor, "*bs 1"]] = None) -> Float[Tensor, "*batch num_samples 1"]:
+        """Return alphas based on predicted densities
+
+        Args:
+            densities: Predicted densities for samples along ray
+
+        Returns:
+            Alphas for each sample
+        """
+
+        if deltas is not None:
+            delta_density = deltas * densities
+            alphas = 1 - torch.exp(-delta_density)
+            alphas = torch.nan_to_num(alphas)
+        else:
+            assert self.deltas is not None, "Deltas must be set to compute alphas"
+            delta_density = self.deltas * densities
+            alphas = 1 - torch.exp(-delta_density)
+            alphas = torch.nan_to_num(alphas)
+
+        return alphas
+
     def get_weights(self, densities: Float[Tensor, "*batch num_samples 1"]) -> Float[Tensor, "*batch num_samples 1"]:
         """Return weights based on predicted densities
 

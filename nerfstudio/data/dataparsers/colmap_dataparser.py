@@ -251,7 +251,7 @@ class ColmapDataParser(DataParser):
                 raise ValueError(f"Unknown dataparser split {split}")
         return indices
 
-    def _generate_dataparser_outputs(self, split: str = "train", **kwargs):
+    def _generate_dataparser_outputs(self, split: str = "train", reuse_dataparser_transform: bool = True, **kwargs):
         assert self.config.data.exists(), f"Data directory {self.config.data} does not exist."
         colmap_path = self.config.data / self.config.colmap_path
         assert colmap_path.exists(), f"Colmap path {colmap_path} does not exist."
@@ -312,6 +312,7 @@ class ColmapDataParser(DataParser):
         You should check that depth_file_path is specified for every frame (or zero frames) in transforms.json.
         """
         poses = torch.from_numpy(np.array(poses).astype(np.float32))
+        """NICO: This is where the poses are calculated"""
         poses, transform_matrix = camera_utils.auto_orient_and_center_poses(
             poses,
             method=self.config.orientation_method,

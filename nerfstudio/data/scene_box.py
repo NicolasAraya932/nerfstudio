@@ -58,6 +58,7 @@ class SceneBox:
         """
         return SceneBox(aabb=(self.aabb - self.get_center()) * scale_factor)
 
+    # TODO: NICO
     @staticmethod
     def get_normalized_positions(positions: Float[Tensor, "*batch 3"], aabb: Float[Tensor, "2 3"]):
         """Return normalized positions in range [0, 1] based on the aabb axis-aligned bounding box.
@@ -66,6 +67,7 @@ class SceneBox:
             positions: the xyz positions
             aabb: the axis-aligned bounding box
         """
+
         aabb_lengths = aabb[1] - aabb[0]
         normalized_positions = (positions - aabb[0]) / aabb_lengths
         return normalized_positions

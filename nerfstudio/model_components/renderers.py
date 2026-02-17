@@ -316,6 +316,23 @@ class AccumulationRenderer(nn.Module):
             accumulation = torch.sum(weights, dim=-2)
         return accumulation
 
+class TMid(nn.Module):
+
+    """Calculate the mid-point along the ray.
+
+    Args:
+        ray_samples: Set of ray samples.
+
+    Returns:
+        Outputs of mid-point values.
+    """
+
+    @classmethod
+    def forward(cls, ray_samples: RaySamples) -> Float[Tensor, "*batch 1"]:
+        t_mid = 0.5 * (ray_samples.frustums.starts + ray_samples.frustums.ends)
+
+        return t_mid
+
 
 class DepthRenderer(nn.Module):
     """Calculate depth along ray.

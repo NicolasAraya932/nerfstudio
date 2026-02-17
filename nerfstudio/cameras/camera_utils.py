@@ -24,6 +24,7 @@ import torch
 from jaxtyping import Float
 from numpy.typing import NDArray
 from torch import Tensor
+import os
 
 _EPS = np.finfo(float).eps * 4.0
 
@@ -549,10 +550,12 @@ def focus_of_attention(poses: Float[Tensor, "*num_poses 4 4"], initial_focus: Fl
     return focus_pt
 
 
+# TODO: NICO
 def auto_orient_and_center_poses(
     poses: Float[Tensor, "*num_poses 4 4"],
-    method: Literal["pca", "up", "vertical", "none"] = "up",
-    center_method: Literal["poses", "focus", "none"] = "poses",
+    method: Literal["pca", "up", "vertical", "none"] = "none",  # "up"
+    center_method: Literal["poses", "focus", "none"] = "poses",  # "poses"
+    mean_origin_override: Optional[Float[Tensor, "3"]] = None,
 ) -> Tuple[Float[Tensor, "*num_poses 3 4"], Float[Tensor, "3 4"]]:
     """Orients and centers the poses.
 
@@ -562,11 +565,13 @@ def auto_orient_and_center_poses(
         with the axes, Z corresponding to the smallest principal component.
         This method works well when all of the cameras are in the same plane, for example when
         images are taken using a mobile robot.
+        NICO: For height
     - up: Orient the poses so that the average up vector is aligned with the z axis.
         This method works well when images are not at arbitrary angles.
     - vertical: Orient the poses so that the Z 3D direction projects close to the
         y axis in images. This method works better if cameras are not all
         looking in the same 3D direction, which may happen in camera arrays or in LLFF.
+        NICO: For Hemisphere maybe.
 
     There are two centering methods:
 
@@ -579,6 +584,7 @@ def auto_orient_and_center_poses(
         poses: The poses to orient.
         method: The method to use for orientation.
         center_method: The method to use to center the poses.
+        mean_origin_override: Optional translation vector used when re-centering poses.
 
     Returns:
         Tuple of the oriented poses and the transform matrix.
@@ -587,7 +593,15 @@ def auto_orient_and_center_poses(
     origins = poses[..., :3, 3]
 
     mean_origin = torch.mean(origins, dim=0)
+    #os.makedirs("/workspace/Desktop/DATASETS/META", exist_ok=True)
+    #np.savetxt("/workspace/Desktop/DATASETS/META/mean_origin_outdoor.txt", mean_origin)
     translation_diff = origins - mean_origin
+
+    translation_override: Optional[Tensor]
+    if mean_origin_override is not None:
+        translation_override = mean_origin_override.to(device=poses.device, dtype=poses.dtype)
+    else:
+        translation_override = None
 
     if center_method == "poses":
         translation = mean_origin
@@ -597,6 +611,9 @@ def auto_orient_and_center_poses(
         translation = torch.zeros_like(mean_origin)
     else:
         raise ValueError(f"Unknown value for center_method: {center_method}")
+
+    if translation_override is not None:
+        translation = translation_override
 
     if method == "pca":
         _, eigvec = torch.linalg.eigh(translation_diff.T @ translation_diff)
