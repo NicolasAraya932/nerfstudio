@@ -58,6 +58,7 @@ class SceneBox:
         """
         return SceneBox(aabb=(self.aabb - self.get_center()) * scale_factor)
 
+    # TODO: NICO
     @staticmethod
     def get_normalized_positions(positions: Float[Tensor, "*batch 3"], aabb: Float[Tensor, "2 3"]):
         """Return normalized positions in range [0, 1] based on the aabb axis-aligned bounding box.
@@ -66,6 +67,7 @@ class SceneBox:
             positions: the xyz positions
             aabb: the axis-aligned bounding box
         """
+
         aabb_lengths = aabb[1] - aabb[0]
         normalized_positions = (positions - aabb[0]) / aabb_lengths
         return normalized_positions
@@ -106,6 +108,58 @@ class OrientedBox:
         comp_m = torch.tensor(S / 2)
         mask = torch.all(torch.concat([pts > comp_l, pts < comp_m], dim=-1), dim=-1)
         return mask
+
+    def _extract_obb_components(self,
+        assume_half_extents: bool = False,     # set True if S are half-lengths
+        enforce_orthonormal: bool = False,     # re-orthonormalize R for numerical safety
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Return (C, R, L) where:
+        C: [3] world-space center (from obb.T)
+        R: [3,3] world-space rotation matrix (from obb.R)
+        L: [3] side lengths along OBB local axes (x,y,z)
+
+        Args:
+        assume_half_extents: if True, treats obb.S as half-extents; returns L = 2*S.
+        enforce_orthonormal: if True, projects R to the closest rotation matrix via SVD.
+
+        Notes:
+        - L are full side lengths (meters/scene units).
+        - Local OBB coordinates span [-L/2, L/2] along each axis.
+        - For sampling voxel centers, use those spans, then transform: P_world = C + R @ P_local.
+        """
+        # ---- basic validation ----
+        if self.R.shape != (3,3):
+            raise ValueError(f"OrientedBox.R must be [3,3], got {tuple(self.R.shape)}")
+        if self.T.shape != (3,):
+            raise ValueError(f"OrientedBox.T must be [3], got {tuple(self.T.shape)}")
+        if self.S.shape != (3,):
+            raise ValueError(f"OrientedBox.S must be [3], got {tuple(self.S.shape)}")
+
+        device = self.R.device
+        dtype  = self.R.dtype
+
+        # Center
+        C = self.T.to(device=device, dtype=dtype).view(3)
+
+        # Rotation
+        R = self.R.to(device=device, dtype=dtype).view(3,3)
+        if enforce_orthonormal:
+            # Project to SO(3) via SVD (closest rotation)
+            U, _, Vh = torch.linalg.svd(R)
+            R = U @ Vh
+            # Ensure det(R)=+1 (proper rotation)
+            if torch.det(R) < 0:
+                U[:, -1] *= -1
+                R = U @ Vh
+
+        # Side lengths
+        L = self.S.to(device=device, dtype=dtype).abs().view(3)  # guard against negative scales
+        if assume_half_extents:
+            L = 2.0 * L
+
+        return C, R, L
+
 
     @staticmethod
     def from_params(

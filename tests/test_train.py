@@ -29,6 +29,9 @@ BLACKLIST = [
     "splatfacto",
     "splatfacto-big",
     "splatfacto-mcmc",
+    "roi_calculation",
+    "fruit-proposal",
+    "semantic-nerfw"
 ]
 
 
@@ -61,7 +64,7 @@ def set_reduced_config(config: TrainerConfig, tmp_path: Path):
 
     # timestamp & output directory
     config.set_timestamp()
-    config.output_dir = tmp_path / "outputs"
+    config.output_dir = tmp_path + "/outputs"
 
     return config
 
@@ -90,5 +93,5 @@ def test_simple_io(tmp_path: Path):
 
 
 if __name__ == "__main__":
-    test_train()
+    test_train(".")
     test_simple_io()

@@ -39,13 +39,23 @@ from nerfstudio.data.datamanagers.base_datamanager import VanillaDataManager
 from nerfstudio.data.datamanagers.parallel_datamanager import ParallelDataManager
 from nerfstudio.data.scene_box import OrientedBox
 from nerfstudio.exporter import texture_utils, tsdf_utils
-from nerfstudio.exporter.exporter_utils import collect_camera_poses, generate_point_cloud, get_mesh_from_filename
+from nerfstudio.exporter.exporter_utils import (
+    collect_camera_poses,
+    generate_fruit_proposal_radiance_cloud,
+    generate_point_cloud,
+    get_mesh_from_filename,
+    generate_radiance_fields_cloud,
+    export_voxel_alpha_grid,
+    extract_fruit_proposal_outputs
+)
 from nerfstudio.exporter.marching_cubes import generate_mesh_with_multires_marching_cubes
 from nerfstudio.fields.sdf_field import SDFField  # noqa
 from nerfstudio.models.splatfacto import SplatfactoModel
 from nerfstudio.pipelines.base_pipeline import Pipeline, VanillaPipeline
 from nerfstudio.utils.eval_utils import eval_setup
 from nerfstudio.utils.rich_utils import CONSOLE
+
+from fruit_proposal.data.fruit_proposal_datamanager import FruitDataManager
 
 
 @dataclass
@@ -92,6 +102,253 @@ def validate_pipeline(normal_method: str, normal_output_name: str, pipeline: Pip
             CONSOLE.print("[bold yellow]Exiting early.")
             sys.exit(1)
 
+@dataclass
+class ExportRadianceField(Exporter):
+    """Export the trained radiance field to a .pt file using torch from outputs dict."""
+
+    num_iterations: int = 1500000
+    """Number of iterations to run the evaluation for."""
+    num_rays_per_batch: int = 32768
+    """Number of rays to evaluate per batch. Decrease if you run out of memory."""
+    obb_center: Optional[Tuple[float, float, float]] = None
+    """Center of the oriented bounding box."""
+    obb_rotation: Optional[Tuple[float, float, float]] = None
+    """Rotation of the oriented bounding box. Expressed as RPY Euler angles in radians"""
+    obb_scale: Optional[Tuple[float, float, float]] = None
+    """Scale of the oriented bounding box along each axis."""
+
+    def main(self) -> None:
+        """Export radiance field."""
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(parents=True)
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"radiance_field_{timestamp}.pt"
+        output_path = self.output_dir / output_filename
+
+        _, pipeline, _, _ = eval_setup(self.load_config)
+
+        # Increase the batch size to speed up the evaluation
+        assert isinstance(
+            pipeline.datamanager,
+            (VanillaDataManager, ParallelDataManager),
+        )
+        if isinstance(pipeline.datamanager, VanillaDataManager):
+            assert pipeline.datamanager.train_pixel_sampler is not None
+            pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+
+
+        # Generate radiance field outputs
+        crop_obb = None
+        if self.obb_center is not None and self.obb_rotation is not None and self.obb_scale is not None:
+            crop_obb = OrientedBox.from_params(self.obb_center, self.obb_rotation, self.obb_scale)
+        radiance_field_data, pcd = generate_radiance_fields_cloud(
+                                            pipeline,
+                                            self.num_iterations,
+                                            crop_obb=crop_obb
+                                        )
+
+        # Save to file
+        output_path = self.output_dir / output_filename
+        torch.save(radiance_field_data, output_path)
+
+        CONSOLE.print(f"[bold green]:white_check_mark: Radiance field saved to {output_path}")
+        CONSOLE.print(f"[bold green]:white_check_mark: Generated {pcd}")
+
+        torch.cuda.empty_cache()
+
+        CONSOLE.print("Saving Point Cloud...")
+        tpcd = o3d.t.geometry.PointCloud.from_legacy(pcd)
+        # The legacy PLY writer converts colors to UInt8,
+        # let us do the same to save space.
+        tpcd.point.colors = (tpcd.point.colors * 255).to(o3d.core.Dtype.UInt8)  # type: ignore
+        ply_filename = output_filename.removesuffix(".pt") + ".ply"
+        o3d.t.io.write_point_cloud(str(self.output_dir / ply_filename), tpcd)
+        print("\033[A\033[A")
+        CONSOLE.print("[bold green]:white_check_mark: Saving Point Cloud")
+
+
+@dataclass
+class ExportVoxelsWithinOBB(Exporter):
+    """Export per-ROI voxel alpha grids (σ→α at voxel centers, no transmittance)."""
+
+    candidate_regions: str
+    factor: float = 2.0
+    snap: int = 16
+    max_voxels: int = 200_000_000
+    assume_half_extents: bool = False
+    chunk_points: int = 1_000_000
+    save_npz_pattern: Optional[str] = None  # e.g. "roi_{i:02d}_alpha.npz"
+
+    def main(self) -> None:
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(parents=True)
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_path = self.output_dir / f"radiance_field_{timestamp}.pt"
+
+        # --- eval setup in inference mode ---
+        _, pipeline, _, _ = eval_setup(self.load_config, test_mode="inference")
+        pipeline.model.eval()
+
+        # Default NPZ pattern inside output_dir if not provided
+        npz_pattern = self.save_npz_pattern
+        if npz_pattern is None:
+            npz_pattern = str(self.output_dir / "roi_{i:02d}_alpha.npz")
+
+        # --- export (no rays involved) ---
+        with torch.no_grad():
+            radiance_field_data = export_voxel_alpha_grid(
+                pipeline,
+                candidate_regions=self.candidate_regions,
+                factor=self.factor,
+                snap=self.snap,
+                max_voxels=self.max_voxels,
+                assume_half_extents=self.assume_half_extents,
+                chunk_points=self.chunk_points,
+                save_npz_pattern=npz_pattern,
+            )
+
+        torch.save(radiance_field_data, output_path)
+        CONSOLE.print(f"[bold green]:white_check_mark: Radiance field saved to {output_path}")
+
+@dataclass
+class ExportEverythingFruitProposal(Exporter):
+
+    num_points: int = 1000000
+    """Number of points to generate. May result in less if outlier removal is used."""
+
+    obb_center: Optional[Tuple[float, float, float]] = None
+    """Center of the oriented bounding box."""
+    obb_rotation: Optional[Tuple[float, float, float]] = None
+    """Rotation of the oriented bounding box. Expressed as RPY Euler angles in radians"""
+    obb_scale: Optional[Tuple[float, float, float]] = None
+    """Scale of the oriented bounding box along each axis."""
+    num_rays_per_batch: int = 32768
+    """Number of rays to evaluate per batch. Decrease if you run out of memory."""
+
+    weight_threshold: float = 0.3
+    acc_threshold: float = 0.3
+    sigma_threshold: float = 0.5
+
+    def main(self) -> None:
+        """Export everything within outputs dict."""
+
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(parents=True)
+
+        _, pipeline, _, _ = eval_setup(self.load_config)
+
+        # Ensure consistent batch size
+        assert isinstance(
+            pipeline.datamanager,
+            (FruitDataManager),
+        )
+        if isinstance(pipeline.datamanager, VanillaDataManager):
+            assert pipeline.datamanager.train_pixel_sampler is not None
+            pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+
+        # Whether the normals should be estimated based on the point cloud.
+        crop_obb = None
+        if self.obb_center is not None and self.obb_rotation is not None and self.obb_scale is not None:
+            crop_obb = OrientedBox.from_params(self.obb_center, self.obb_rotation, self.obb_scale)
+
+        all_pcds = extract_fruit_proposal_outputs(
+            weight_threshold = self.weight_threshold,
+            acc_threshold = self.acc_threshold,
+            sigma_threshold = self.sigma_threshold, # Values from 0 to sigma_max, so percentage
+            pipeline=pipeline,
+            num_points=self.num_points,
+            crop_obb=crop_obb,
+        )
+        torch.cuda.empty_cache()
+
+        # Persist each point cloud (per cloud type and mask variant)
+        from datetime import datetime
+
+        CONSOLE.print(f"[bold green]:white_check_mark: Generated Fruit Proposal point clouds")
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        os.makedirs(str(self.output_dir / timestamp), exist_ok=True)
+
+
+        for cloud_name, cloud_points in all_pcds["points"].items():
+            cloud_colors = all_pcds["colors"].get(cloud_name, {})
+            for mask_name, points in cloud_points.items():
+                if points.numel() == 0:
+                    continue
+                color_key = mask_name.replace("_mask", "_colors")
+                colors = cloud_colors.get(color_key, torch.empty((points.shape[0], 3)))
+                pts_np = points.cpu().numpy()
+                cols_np = colors.cpu().numpy()
+
+                CONSOLE.print(f"Saving {cloud_name} ({mask_name})...")
+                pcd = o3d.geometry.PointCloud()
+                pcd.points = o3d.utility.Vector3dVector(pts_np)
+                pcd.colors = o3d.utility.Vector3dVector(cols_np)
+
+                tpcd = o3d.t.geometry.PointCloud.from_legacy(pcd)
+                tpcd.point.colors = (tpcd.point.colors * 255).to(o3d.core.Dtype.UInt8)  # type: ignore
+                filename = f"{cloud_name}_{mask_name}.ply"
+                o3d.t.io.write_point_cloud(str(self.output_dir / timestamp / filename ), tpcd)
+                print("\033[A\033[A")
+                CONSOLE.print(f"[bold green]:white_check_mark: Saved {filename}")
+
+@dataclass
+class ExportSemanticRadianceField(Exporter):
+    """Export the trained semantic radiance field to a .pt file using torch from outputs dict."""
+
+    num_iterations: int = 1500000
+    """Number of iterations to run the evaluation for."""
+    num_rays_per_batch: int = 8192
+    """Number of rays to evaluate per batch. Decrease if you run out of memory."""
+    obb_center: Optional[Tuple[float, float, float]] = None
+    """Center of the oriented bounding box."""
+    obb_rotation: Optional[Tuple[float, float, float]] = None
+    """Rotation of the oriented bounding box. Expressed as RPY Euler angles in radians"""
+    obb_scale: Optional[Tuple[float, float, float]] = None
+    """Scale of the oriented bounding box along each axis."""
+    threshold: float = 0.3
+    """Threshold for semantic weights to consider a point valid."""
+
+    def main(self) -> None:
+        """Export semantic radiance field."""
+        if not self.output_dir.exists():
+            self.output_dir.mkdir(parents=True)
+
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_filename = f"semantic_radiance_field_{timestamp}.pt"
+        output_path = self.output_dir / output_filename
+
+        _, pipeline, _, _ = eval_setup(self.load_config)
+
+        # Ensure consistent batch size
+        assert isinstance(
+            pipeline.datamanager,
+            (FruitDataManager),
+        )
+        if isinstance(pipeline.datamanager, VanillaDataManager):
+            assert pipeline.datamanager.train_pixel_sampler is not None
+            pipeline.datamanager.train_pixel_sampler.num_rays_per_batch = self.num_rays_per_batch
+
+        crop_obb = None
+        if self.obb_center is not None and self.obb_rotation is not None and self.obb_scale is not None:
+            crop_obb = OrientedBox.from_params(self.obb_center, self.obb_rotation, self.obb_scale)
+        outputs = generate_fruit_proposal_radiance_cloud(
+                                            pipeline=pipeline,
+                                            num_points=self.num_iterations,
+                                            semantic_output_name="semantic_labels",
+                                            depth_output_name="depth",
+                                            crop_obb=crop_obb,
+                                        )
+
+        # Save to file
+        torch.save(outputs, output_path)
+        torch.cuda.empty_cache()
+
+        CONSOLE.print(f"[bold green]:white_check_mark: Semantic radiance field saved to {output_path}")
 
 @dataclass
 class ExportPointCloud(Exporter):
@@ -288,12 +545,6 @@ class ExportPoissonMesh(Exporter):
     """Name of the normal output."""
     save_point_cloud: bool = False
     """Whether to save the point cloud."""
-    use_bounding_box: bool = True
-    """Only query points within the bounding box"""
-    bounding_box_min: Tuple[float, float, float] = (-1, -1, -1)
-    """Minimum of the bounding box, used if use_bounding_box is True."""
-    bounding_box_max: Tuple[float, float, float] = (1, 1, 1)
-    """Minimum of the bounding box, used if use_bounding_box is True."""
     obb_center: Optional[Tuple[float, float, float]] = None
     """Center of the oriented bounding box."""
     obb_rotation: Optional[Tuple[float, float, float]] = None
@@ -657,6 +908,10 @@ class ExportGaussianSplat(Exporter):
 
 Commands = tyro.conf.FlagConversionOff[
     Union[
+        Annotated[ExportEverythingFruitProposal, tyro.conf.subcommand(name="fruit-proposal")],
+        Annotated[ExportVoxelsWithinOBB, tyro.conf.subcommand(name="candidate-regions")],
+        Annotated[ExportSemanticRadianceField, tyro.conf.subcommand(name="semantic-field")],
+        Annotated[ExportRadianceField, tyro.conf.subcommand(name="radiance-field")],
         Annotated[ExportPointCloud, tyro.conf.subcommand(name="pointcloud")],
         Annotated[ExportTSDFMesh, tyro.conf.subcommand(name="tsdf")],
         Annotated[ExportPoissonMesh, tyro.conf.subcommand(name="poisson")],

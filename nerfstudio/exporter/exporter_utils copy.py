@@ -263,7 +263,7 @@ def generate_radiance_fields_cloud(
     depth_output_name: str = "depth",
     normal_output_name: Optional[str] = None,
     crop_obb: Optional[OrientedBox] = None,
-) -> Tuple[Dict[str, torch.Tensor], o3d.geometry.PointCloud]:
+) -> Dict[str, torch.Tensor]:
     """Generate a radiance field dataset from a NeRF model.
 
     Args:
@@ -298,20 +298,7 @@ def generate_radiance_fields_cloud(
     normals = []
     view_directions = []
     density = []
-    camera_indices = []
     mask = None
-    meta = {}
-    # To extract metadata (Origins)
-    with torch.no_grad():
-        ray_bundle, _ = pipeline.datamanager.next_train(0)
-        assert isinstance(ray_bundle, RayBundle)
-        meta["origins"] = ray_bundle.origins.cpu()
-        meta["directions"] = ray_bundle.directions.cpu()
-        meta["pixel_area"] = ray_bundle.pixel_area.cpu()
-        assert ray_bundle.camera_indices is not None, "EXPORTER ERROR: There is no camera indices 310 generate_radiance_fields_cloud"
-        meta["camera_indices"] = ray_bundle.camera_indices.cpu()
-        meta["nears"] = ray_bundle.nears.cpu() if ray_bundle.nears is not None else None
-        meta["fars"] = ray_bundle.fars.cpu() if ray_bundle.fars is not None else None
 
     with progress as progress_bar:
         task = progress_bar.add_task("Generating Radiance Field", total=num_points)
@@ -353,7 +340,6 @@ def generate_radiance_fields_cloud(
 
             point = ray_bundle.origins + ray_bundle.directions * depth
             view_direction = ray_bundle.directions
-            camera_idx = ray_bundle.camera_indices
 
             # Filter points with opacity lower than 0.01
             mask = rgba[..., -1] > 0.01
@@ -377,11 +363,10 @@ def generate_radiance_fields_cloud(
             rgbs.append(rgb.cpu())
             accumulations.append(outputs["accumulation"][mask].cpu())
             depths.append(outputs["depth"][mask].cpu())
-            origins.append(ray_bundle.origins[mask].cpu()) # TODO: Delete once all adapted
-            directions.append(ray_bundle.directions[mask].cpu()) # TODO: Delete once all adapted
-            pixel_areas.append(ray_bundle.pixel_area[mask].cpu()) # TODO: Delete once all adapted
+            origins.append(ray_bundle.origins[mask].cpu())
+            directions.append(ray_bundle.directions[mask].cpu())
+            pixel_areas.append(ray_bundle.pixel_area[mask].cpu())
             view_directions.append(view_direction.cpu())
-            camera_indices.append(camera_idx.cpu())
             density.append(sigma.cpu())
 
             if normal is not None:
@@ -395,27 +380,17 @@ def generate_radiance_fields_cloud(
         "rgb": torch.cat(rgbs, dim=0),
         "accumulation": torch.cat(accumulations, dim=0),
         "depth": torch.cat(depths, dim=0),
-        "origins": torch.cat(origins, dim=0),
+        "origins": origins[0],
         "directions": torch.cat(directions, dim=0),
         "pixel_area": torch.cat(pixel_areas, dim=0),
         "view_directions": torch.cat(view_directions, dim=0),
         "density": torch.cat(density, dim=0),
-        "camera_indices": torch.cat(camera_indices, dim=0),
-        "meta": meta
     }
 
-    points = torch.cat(points, dim=0)
-    rgbs = torch.cat(rgbs, dim=0)
-    view_directions = torch.cat(view_directions, dim=0).cpu()
+    if normals:
+        radiance_field_data["normals"] = torch.cat(normals, dim=0)
 
-    import open3d as o3d
-
-    pcd = o3d.geometry.PointCloud()
-    pcd.points = o3d.utility.Vector3dVector(points.double().cpu().numpy())
-    pcd.colors = o3d.utility.Vector3dVector(rgbs.double().cpu().numpy())
-
-
-    return radiance_field_data, pcd
+    return radiance_field_data
 
 def generate_point_cloud(
     pipeline: Pipeline,
@@ -566,18 +541,11 @@ def extract_fruit_proposal_outputs(
 
     pipeline: Pipeline,
     num_points: int = 1000000,
-    weight_threshold: float = 0.1,
-    acc_threshold: float = 0.1,
+    weight_threshold: float = 0.3,
+    acc_threshold: float = 0.3,
     sigma_threshold: float = 0.1, # Values from 0 to sigma_max, so percentage
     crop_obb: Optional[OrientedBox] = None,
 ):
-    task_labels = {
-        "oTransmittance": "Opacity x Transmittance cloud",
-        "accumulation": "Accumulation cloud",
-        "sigma": "Density cloud",
-        "depth": "Depth cloud",
-        "expected_depth": "Expected depth cloud",
-    }
     progress = Progress(
         TextColumn(":cloud: Computing Fruit Proposal Field :cloud:"),
         BarColumn(),
@@ -587,185 +555,151 @@ def extract_fruit_proposal_outputs(
     )
 
     class parameters:
-        rgba: Any = None
-        sigma: Any = None
-        depth: Any = None
+
+        rgba : Any = None
+        sigma : Any = None
+        depth : Any = None
         exp_depth: Any = None
-        oTransmittance: Any = None
-        accumulation: Any = None
-        t_mid: Any = None
+        oTransmittance : Any = None
+        accumulation : Any = None
+        t_mid : Any = None
 
         def raiseExcept(self):
             if self.rgba is None:
                 raise ValueError("rgba is not saved")
+
             if self.sigma is None:
                 raise ValueError("sigma is not saved")
+            
             if self.depth is None:
                 raise ValueError("depth is not saved")
+
             if self.exp_depth is None:
                 raise ValueError("exp_depth is not saved")
+
             if self.oTransmittance is None:
                 raise ValueError("oTransmittance is not saved")
+
             if self.accumulation is None:
                 raise ValueError("accumulation is not saved")
+
             if self.t_mid is None:
                 raise ValueError("t_mid is not saved")
 
-    # Per-cloud storage; each has per-mask point and color lists.
-    mask_keys = ["rgba_mask", "oTransmittance_mask", "acc_mask", "sigma_mask", "combined_mask"]
-    cloud_keys = ["depth", "expected_depth", "oTransmittance", "accumulation", "sigma"]
 
-    def init_cloud_dict() -> Dict[str, List[torch.Tensor]]:
-        return {k: [] for k in mask_keys}
-
-    def init_color_dict() -> Dict[str, List[torch.Tensor]]:
-        return {k.replace("_mask", "_colors"): [] for k in mask_keys}
-
-    points_store: Dict[str, Dict[str, List[torch.Tensor]]] = {k: init_cloud_dict() for k in cloud_keys}
-    colors_store: Dict[str, Dict[str, List[torch.Tensor]]] = {k: init_color_dict() for k in cloud_keys}
-    collected = {k: 0 for k in cloud_keys}
-    stagnant_iters = 0
-
-    def append_with_mask(store_points: Dict[str, List[torch.Tensor]],
-                         store_colors: Dict[str, List[torch.Tensor]],
-                         mask_name: str,
-                         pts: torch.Tensor,
-                         colors: torch.Tensor,
-                         mask: torch.Tensor) -> int:
-        if mask is None or pts is None:
-            return 0
-        masked_pts = pts[mask]
-        masked_colors = colors[mask]
-        if crop_obb is not None:
-            crop_mask = crop_obb.within(masked_pts)
-            masked_pts = masked_pts[crop_mask]
-            masked_colors = masked_colors[crop_mask]
-        if masked_pts.numel() == 0:
-            return 0
-        store_points[mask_name].append(masked_pts.cpu())
-        store_colors[mask_name.replace("_mask", "_colors")].append(masked_colors.cpu())
-        return masked_pts.shape[0]
+    exports : List[Dict[str, Any]] = []
+    densities = []
+    colors = []
+    points_by_depth = {}
+    points_by_depth["rgba_mask"] = []
+    points_by_depth["oTransmittance_mask"] = []
+    points_by_depth["acc_mask"] = []
+    points_by_depth["sigma_mask"] = []
+    points_by_exp_depth = {}
+    points_by_exp_depth["rgba_mask"] = []
+    points_by_exp_depth["oTransmittance_mask"] = []
+    points_by_exp_depth["acc_mask"] = []
+    points_by_exp_depth["sigma_mask"] = []
+    points_by_oTransmittance = {}
+    points_by_oTransmittance["rgba_mask"] = []
+    points_by_oTransmittance["oTransmittance_mask"] = []
+    points_by_oTransmittance["acc_mask"] = []
+    points_by_oTransmittance["sigma_mask"] = []
 
     with progress as progress_bar:
-        tasks = {key: progress_bar.add_task(label, total=num_points) for key, label in task_labels.items()}
+        task = progress_bar.add_task("Generating Radiance Field", total=num_points)
         while not progress_bar.finished:
+
             with torch.no_grad():
                 ray_bundle, _ = pipeline.datamanager.next_train(0)
                 assert isinstance(ray_bundle, RayBundle)
                 outputs = pipeline.model(ray_bundle)
 
+            exports_labels = outputs.keys()
+            export = {}
+            for label in exports_labels:
+                export[label] = outputs[label]
+
+            view_direction = ray_bundle.directions
+
+            # To obtain
             param = parameters()
-            param.rgba = pipeline.model.get_rgba_image(outputs, "rgb")
-            param.sigma = outputs["density"]
-            param.depth = outputs["depth"]
-            param.exp_depth = outputs["expected_depth"]
-            param.oTransmittance = outputs["opacity_transmittance"]
-            param.accumulation = outputs["accumulation"]
-            param.t_mid = outputs["t_mid"].squeeze(-1)
+
+            for label in exports_labels:
+                if label == "rgb":
+                    # To filter by opacity
+                    param.rgba = pipeline.model.get_rgba_image(outputs, label)
+
+                if label == "density":
+                    # To filter by density
+                    param.sigma = outputs[label]
+
+                # Points according to depth
+                if label == "depth":
+                    param.depth = outputs[label]
+
+                # Points according to expected depth
+                if label == "expected_depth":
+                    param.exp_depth = outputs[label]
+
+                # Points according to opacity x transmittance
+                if label == "opacity_transmittance":
+                    param.oTransmittance = outputs[label]
+
+                # Points according to accumulation (SUM(opacity x transmittance))
+                if label == "accumulation":
+                    param.accumulation = outputs[label]
+
+                if label == "t_mid":
+                    param.t_mid = outputs[label].squeeze(-1)
+            
             param.raiseExcept()
 
+            # Only density
+            density = param.sigma
+
+            # Only color
             rgb = param.rgba[..., :3]
 
-            # Peak points per strategy
-            # Ensure all per-sample tensors share shape [N, S]
-            def ensure_samples(x: torch.Tensor) -> torch.Tensor:
-                # Flatten per-ray samples to shape [N, S] for consistent argmax/gather.
-                return x.reshape(x.shape[0], -1) if x.dim() > 1 else x.unsqueeze(-1)
+            # POINTS BY:
+            # By opacity_transmittance
+            idx_oTransmittance = torch.argmax(param.oTransmittance, dim=-1, keepdim=True)             # [N,1]
+            t_peak_oTransmittance = torch.gather(param.t_mid, -1, idx_oTransmittance).squeeze(-1)             # [N]
+            point_by_oTransmittance = ray_bundle.origins + ray_bundle.directions * t_peak_oTransmittance[..., None]  # [N,3]
 
-            oTransmittance_samples = ensure_samples(param.oTransmittance)
-            acc_samples = ensure_samples(param.accumulation)
-            sigma_samples = ensure_samples(param.sigma)
-            t_mid_samples = ensure_samples(param.t_mid)
+            # By accumulation
+            idx_acc = torch.argmax(param.accumulation, dim=-1, keepdim=True)             # [N,1]
+            t_peak_acc = torch.gather(param.t_mid, -1, idx_acc).squeeze(-1)             # [N]
+            point_by_acc = ray_bundle.origins + ray_bundle.directions * t_peak_acc[..., None]  # [N,3]
 
-            idx_oTransmittance = torch.argmax(oTransmittance_samples, dim=1, keepdim=True)
-            t_peak_oTransmittance = torch.gather(t_mid_samples, 1, idx_oTransmittance).squeeze(-1)
-            point_by_oTransmittance = ray_bundle.origins + ray_bundle.directions * t_peak_oTransmittance[..., None]
+            # By density
+            idx_sigma = torch.argmax(param.sigma, dim=-1, keepdim=True)             # [N,1]
+            t_peak_sigma = torch.gather(param.t_mid, -1, idx_sigma).squeeze(-1)             # [N]
+            point_by_sigma = ray_bundle.origins + ray_bundle.directions * t_peak_sigma[..., None]  # [N,3]
 
-            idx_acc = torch.argmax(acc_samples, dim=1, keepdim=True)
-            t_peak_acc = torch.gather(t_mid_samples, 1, idx_acc).squeeze(-1)
-            point_by_acc = ray_bundle.origins + ray_bundle.directions * t_peak_acc[..., None]
+            # By depth
+            depth_point = ray_bundle.origins + view_direction * param.depth
 
-            idx_sigma = torch.argmax(sigma_samples, dim=1, keepdim=True)
-            t_peak_sigma = torch.gather(t_mid_samples, 1, idx_sigma).squeeze(-1)
-            point_by_sigma = ray_bundle.origins + ray_bundle.directions * t_peak_sigma[..., None]
+            # By expected depth
+            exp_depth_point = ray_bundle.origins + view_direction * param.exp_depth
 
-            depth_point = ray_bundle.origins + ray_bundle.directions * param.depth
-            exp_depth_point = ray_bundle.origins + ray_bundle.directions * param.exp_depth
+            # Filter by oTransmittance
+            oTransmittance_mask = param.oTransmittance.max(dim=-1).values > weight_threshold
 
-            # Masks
-            oTransmittance_mask = oTransmittance_samples.max(dim=1).values > weight_threshold
+            # Filter by opacity
             rgba_mask = param.rgba[..., -1] > 0.5
-            acc_mask = acc_samples.max(dim=1).values > acc_threshold
-            sigma_peak = sigma_samples.max(dim=1).values
-            sigma_cutoff = sigma_peak.max() * sigma_threshold
+
+            # Filter by acc
+            acc_mask = param.accumulation.max(dim=-1).values > acc_threshold
+
+            # Filter by density
+            sigma_peak = param.sigma.max(dim=-1).values             # [N] per-ray max density
+            sigma_cutoff = sigma_peak.max() * sigma_threshold       # scalar tensor
             sigma_mask = sigma_peak > sigma_cutoff
-            combined_mask = oTransmittance_mask & rgba_mask & acc_mask & sigma_mask
 
-            counts: Dict[str, List[int]] = {k: [] for k in cloud_keys}
 
-            counts["oTransmittance"].append(append_with_mask(points_store["oTransmittance"], colors_store["oTransmittance"], "combined_mask", point_by_oTransmittance, rgb, combined_mask))
-            counts["oTransmittance"].append(append_with_mask(points_store["oTransmittance"], colors_store["oTransmittance"], "rgba_mask", point_by_oTransmittance, rgb, rgba_mask))
-            counts["oTransmittance"].append(append_with_mask(points_store["oTransmittance"], colors_store["oTransmittance"], "oTransmittance_mask", point_by_oTransmittance, rgb, oTransmittance_mask))
-            counts["oTransmittance"].append(append_with_mask(points_store["oTransmittance"], colors_store["oTransmittance"], "acc_mask", point_by_oTransmittance, rgb, acc_mask))
-            counts["oTransmittance"].append(append_with_mask(points_store["oTransmittance"], colors_store["oTransmittance"], "sigma_mask", point_by_oTransmittance, rgb, sigma_mask))
-            counts["accumulation"].append(append_with_mask(points_store["accumulation"], colors_store["accumulation"], "combined_mask", point_by_acc, rgb, combined_mask))
-            counts["accumulation"].append(append_with_mask(points_store["accumulation"], colors_store["accumulation"], "rgba_mask", point_by_acc, rgb, rgba_mask))
-            counts["accumulation"].append(append_with_mask(points_store["accumulation"], colors_store["accumulation"], "oTransmittance_mask", point_by_acc, rgb, oTransmittance_mask))
-            counts["accumulation"].append(append_with_mask(points_store["accumulation"], colors_store["accumulation"], "acc_mask", point_by_acc, rgb, acc_mask))
-            counts["accumulation"].append(append_with_mask(points_store["accumulation"], colors_store["accumulation"], "sigma_mask", point_by_acc, rgb, sigma_mask))
 
-            counts["sigma"].append(append_with_mask(points_store["sigma"], colors_store["sigma"], "combined_mask", point_by_sigma, rgb, combined_mask))
-            counts["sigma"].append(append_with_mask(points_store["sigma"], colors_store["sigma"], "rgba_mask", point_by_sigma, rgb, rgba_mask))
-            counts["sigma"].append(append_with_mask(points_store["sigma"], colors_store["sigma"], "oTransmittance_mask", point_by_sigma, rgb, oTransmittance_mask))
-            counts["sigma"].append(append_with_mask(points_store["sigma"], colors_store["sigma"], "acc_mask", point_by_sigma, rgb, acc_mask))
-            counts["sigma"].append(append_with_mask(points_store["sigma"], colors_store["sigma"], "sigma_mask", point_by_sigma, rgb, sigma_mask))
-
-            counts["depth"].append(append_with_mask(points_store["depth"], colors_store["depth"], "combined_mask", depth_point, rgb, combined_mask))
-            counts["depth"].append(append_with_mask(points_store["depth"], colors_store["depth"], "rgba_mask", depth_point, rgb, rgba_mask))
-            counts["depth"].append(append_with_mask(points_store["depth"], colors_store["depth"], "oTransmittance_mask", depth_point, rgb, oTransmittance_mask))
-            counts["depth"].append(append_with_mask(points_store["depth"], colors_store["depth"], "acc_mask", depth_point, rgb, acc_mask))
-            counts["depth"].append(append_with_mask(points_store["depth"], colors_store["depth"], "sigma_mask", depth_point, rgb, sigma_mask))
-
-            counts["expected_depth"].append(append_with_mask(points_store["expected_depth"], colors_store["expected_depth"], "combined_mask", exp_depth_point, rgb, combined_mask))
-            counts["expected_depth"].append(append_with_mask(points_store["expected_depth"], colors_store["expected_depth"], "rgba_mask", exp_depth_point, rgb, rgba_mask))
-            counts["expected_depth"].append(append_with_mask(points_store["expected_depth"], colors_store["expected_depth"], "oTransmittance_mask", exp_depth_point, rgb, oTransmittance_mask))
-            counts["expected_depth"].append(append_with_mask(points_store["expected_depth"], colors_store["expected_depth"], "acc_mask", exp_depth_point, rgb, acc_mask))
-            counts["expected_depth"].append(append_with_mask(points_store["expected_depth"], colors_store["expected_depth"], "sigma_mask", exp_depth_point, rgb, sigma_mask))
-
-            total_added = 0
-            for task_key, count_list in counts.items():
-                max_count = max(count_list) if count_list else 0
-                if max_count > 0:
-                    collected[task_key] += max_count
-                    total_added += max_count
-                    progress_bar.advance(tasks[task_key], max_count)
-
-            stagnant_iters = stagnant_iters + 1 if total_added == 0 else 0
-            if all(collected[k] >= num_points for k in cloud_keys):
-                # mark tasks complete to exit progress cleanly
-                for t in tasks.values():
-                    if progress_bar.tasks[t].completed < progress_bar.tasks[t].total:
-                        progress_bar.advance(t, progress_bar.tasks[t].total - progress_bar.tasks[t].completed)
-                break
-
-            # Safety: break if no points are being added for many iterations to avoid infinite loops
-            if stagnant_iters > 50:
-                CONSOLE.print("[bold yellow]Warning: No new points added for 50 iterations; stopping early.")
-                break
-
-    def cat_dict(store: Dict[str, List[torch.Tensor]]) -> Dict[str, torch.Tensor]:
-        return {k: (torch.cat(v, dim=0) if v else torch.empty((0, 3))) for k, v in store.items()}
-
-    def cat_color_dict(store: Dict[str, List[torch.Tensor]]) -> Dict[str, torch.Tensor]:
-        return {k: (torch.cat(v, dim=0) if v else torch.empty((0, 3))) for k, v in store.items()}
-
-    return {
-        "points": {k: cat_dict(v) for k, v in points_store.items()},
-        "colors": {k: cat_color_dict(v) for k, v in colors_store.items()},
-        "weight_threshold": weight_threshold,
-        "acc_threshold": acc_threshold,
-        "sigma_threshold": sigma_threshold,
-    }
+  
 
 def generate_fruit_proposal_radiance_cloud(
     pipeline: Pipeline,

@@ -64,6 +64,13 @@ from nerfstudio.pipelines.base_pipeline import VanillaPipelineConfig
 from nerfstudio.pipelines.dynamic_batch import DynamicBatchPipelineConfig
 from nerfstudio.plugins.registry import discover_methods
 
+# Import your custom pieces
+from fruit_proposal.data.fruit_proposal_datamanager import FruitDataManagerConfig
+from fruit_proposal.data.fruit_proposal_dataparser import FruitProposalDataParserConfig
+from fruit_proposal.fruit_proposal import FruitProposalModelConfig
+
+from roi_calculation.roi_model import RoiModelConfig
+
 method_configs: Dict[str, Union[TrainerConfig, ExternalMethodDummyTrainerConfig]] = {}
 descriptions = {
     "nerfacto": "Recommended real-time model tuned for real captures. This model will be continually updated.",
@@ -72,6 +79,10 @@ descriptions = {
     "instant-ngp": "Implementation of Instant-NGP. Recommended real-time model for unbounded scenes.",
     "instant-ngp-bounded": "Implementation of Instant-NGP. Recommended for bounded real and synthetic scenes",
     "mipnerf": "High quality model for bounded scenes. (slow)",
+    "only-semantic-nerf": "Semantic NeRF model for binary semantics and density.",
+    "roi_calculation": "ROI calculation model for semantic segmentation.",
+    "fruit-proposal_one": "Fruit proposal model for semantic segmentation.",
+    "fruit-proposal_two": "Fruit proposal model for semantic segmentation.",
     "semantic-nerfw": "Predicts semantic segmentations and filters out transient objects.",
     "vanilla-nerf": "Original NeRF model. (slow)",
     "tensorf": "tensorf",
@@ -84,8 +95,9 @@ descriptions = {
     "splatfacto-big": "Larger version of Splatfacto with higher quality.",
 }
 
-method_configs["nerfacto"] = TrainerConfig(
-    method_name="nerfacto",
+# Nerfacto 
+method_configs["roi_calculation"] = TrainerConfig(
+    method_name="roi_calculation",
     steps_per_eval_batch=500,
     steps_per_save=2000,
     max_num_iterations=30000,
@@ -95,6 +107,124 @@ method_configs["nerfacto"] = TrainerConfig(
             dataparser=NerfstudioDataParserConfig(),
             train_num_rays_per_batch=4096,
             eval_num_rays_per_batch=4096,
+        ),
+        model=RoiModelConfig(
+            eval_num_rays_per_chunk=1 << 15,
+            average_init_density=0.01,
+            camera_optimizer=CameraOptimizerConfig(mode="SO3xR3"),
+        ),
+    ),
+    optimizers={
+        "proposal_networks": {
+            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+        },
+        "fields": {
+            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+        },
+        "camera_opt": {
+            "optimizer": AdamOptimizerConfig(lr=1e-3, eps=1e-15),
+            "scheduler": ExponentialDecaySchedulerConfig(lr_final=1e-4, max_steps=5000),
+        },
+    },
+    viewer=ViewerConfig(num_rays_per_chunk=1 << 15),
+    vis="viewer",
+)
+
+method_configs["fruit-proposal"] = TrainerConfig(
+    method_name="fruit-proposal",
+    steps_per_eval_batch=100,
+    steps_per_eval_image=100,
+    steps_per_save=100,
+    max_num_iterations=30000,
+    mixed_precision=True,
+    pipeline=VanillaPipelineConfig(
+        datamanager=FruitDataManagerConfig(
+            dataparser=FruitProposalDataParserConfig(),
+        ),
+        model=FruitProposalModelConfig(),
+    ),
+    optimizers={
+        "proposal_networks": {
+            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+        },
+        "fields": {
+            "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+            "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+        },
+    },
+    viewer=ViewerConfig(num_rays_per_chunk=1 << 12),
+    vis="viewer",
+)
+
+#     optimizers={
+#         "proposal_networks": {
+#             "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+#             "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+#         },
+#         "fields": {
+#             "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-15),
+#             "scheduler": ExponentialDecaySchedulerConfig(lr_final=0.0001, max_steps=200000),
+#         },
+#         "camera_opt": None
+#     },
+#     viewer=ViewerConfig(num_rays_per_chunk=1 << 12),
+#     vis="viewer",
+# )
+
+# method_configs["fruit-proposal_two"] = TrainerConfig(
+#     method_name="fruit-proposal",
+#     steps_per_eval_batch=20,
+#     steps_per_save=200,
+#     max_num_iterations=100_000,
+#     mixed_precision=True,
+#     pipeline=VanillaPipelineConfig(
+#         datamanager=FruitDataManagerConfig(
+#             dataparser=FruitProposalDataParserConfig(),
+#             train_num_rays_per_batch=4096,
+#             eval_num_rays_per_batch=4096,
+#         ),
+#         model=FruitProposalModelConfig(
+#             eval_num_rays_per_chunk=1 << 15,
+#             average_init_density=0.01,
+#             camera_optimizer=CameraOptimizerConfig(mode="SO3xR3"),
+#             ),
+#     ),
+#     optimizers={
+#         "proposal_networks": {
+#             "optimizer": AdamOptimizerConfig(lr=5e-3, eps=1e-8),
+#             "scheduler": ExponentialDecaySchedulerConfig(lr_final=1e-4, max_steps=100000),
+#         },
+#         "nerfacto_fields": {
+#             "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-8),
+#             "scheduler": ExponentialDecaySchedulerConfig(lr_final=5e-4, max_steps=100000),
+#         },
+#         "fruit_proposal_fields": {
+#             "optimizer": AdamOptimizerConfig(lr=1e-2, eps=1e-8),
+#             "scheduler": ExponentialDecaySchedulerConfig(lr_final=5e-4, max_steps=800),
+#         },
+#         "camera_opt": {
+#             "optimizer": AdamOptimizerConfig(lr=1e-3, eps=1e-8),
+#             "scheduler": ExponentialDecaySchedulerConfig(lr_final=1e-4, max_steps=5000),
+#         },
+#     },
+#     viewer=ViewerConfig(num_rays_per_chunk=1 << 12),
+#     vis="viewer",
+# )
+
+method_configs["nerfacto"] = TrainerConfig(
+    method_name="nerfacto",
+    steps_per_eval_batch=500,
+    steps_per_save=2000,
+    max_num_iterations=30000,
+    mixed_precision=True,
+    pipeline=VanillaPipelineConfig(
+        datamanager=ParallelDataManagerConfig(
+            dataparser=NerfstudioDataParserConfig(),
+            train_num_rays_per_batch=8192,
+            eval_num_rays_per_batch=8192,
         ),
         model=NerfactoModelConfig(
             eval_num_rays_per_chunk=1 << 15,
@@ -219,7 +349,7 @@ method_configs["depth-nerfacto"] = TrainerConfig(
     max_num_iterations=30000,
     mixed_precision=True,
     pipeline=VanillaPipelineConfig(
-        datamanager=VanillaDataManagerConfig(
+        datamanager=ParallelDataManagerConfig(
             _target=ParallelDataManager[DepthDataset],
             dataparser=NerfstudioDataParserConfig(),
             train_num_rays_per_batch=4096,
