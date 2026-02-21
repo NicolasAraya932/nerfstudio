@@ -65,11 +65,11 @@ from nerfstudio.pipelines.dynamic_batch import DynamicBatchPipelineConfig
 from nerfstudio.plugins.registry import discover_methods
 
 # Import your custom pieces
-from fruit_proposal.data.fruit_proposal_datamanager import FruitDataManagerConfig
-from fruit_proposal.data.fruit_proposal_dataparser import FruitProposalDataParserConfig
-from fruit_proposal.fruit_proposal import FruitProposalModelConfig
+#from fruit_proposal.data.fruit_proposal_datamanager import FruitDataManagerConfig
+#from fruit_proposal.data.fruit_proposal_dataparser import FruitProposalDataParserConfig
+#from fruit_proposal.fruit_proposal import FruitProposalModelConfig
 
-from roi_calculation.roi_model import RoiModelConfig
+#from roi_calculation.roi_model import RoiModelConfig
 
 method_configs: Dict[str, Union[TrainerConfig, ExternalMethodDummyTrainerConfig]] = {}
 descriptions = {
@@ -80,9 +80,9 @@ descriptions = {
     "instant-ngp-bounded": "Implementation of Instant-NGP. Recommended for bounded real and synthetic scenes",
     "mipnerf": "High quality model for bounded scenes. (slow)",
     "only-semantic-nerf": "Semantic NeRF model for binary semantics and density.",
-    "roi_calculation": "ROI calculation model for semantic segmentation.",
-    "fruit-proposal_one": "Fruit proposal model for semantic segmentation.",
-    "fruit-proposal_two": "Fruit proposal model for semantic segmentation.",
+    #"roi_calculation": "ROI calculation model for semantic segmentation.",
+    #"fruit-proposal_one": "Fruit proposal model for semantic segmentation.",
+    #"fruit-proposal_two": "Fruit proposal model for semantic segmentation.",
     "semantic-nerfw": "Predicts semantic segmentations and filters out transient objects.",
     "vanilla-nerf": "Original NeRF model. (slow)",
     "tensorf": "tensorf",
@@ -96,6 +96,7 @@ descriptions = {
 }
 
 # Nerfacto 
+"""
 method_configs["roi_calculation"] = TrainerConfig(
     method_name="roi_calculation",
     steps_per_eval_batch=500,
@@ -173,6 +174,7 @@ method_configs["fruit-proposal"] = TrainerConfig(
 #     viewer=ViewerConfig(num_rays_per_chunk=1 << 12),
 #     vis="viewer",
 # )
+"""
 
 # method_configs["fruit-proposal_two"] = TrainerConfig(
 #     method_name="fruit-proposal",

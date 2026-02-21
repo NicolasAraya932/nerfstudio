@@ -36,11 +36,11 @@ from nerfstudio.data.dataparsers.scannet_dataparser import ScanNetDataParserConf
 from nerfstudio.data.dataparsers.scannetpp_dataparser import ScanNetppDataParserConfig
 from nerfstudio.data.dataparsers.sdfstudio_dataparser import SDFStudioDataParserConfig
 from nerfstudio.data.dataparsers.sitcoms3d_dataparser import Sitcoms3DDataParserConfig
-from fruit_proposal.data.fruit_proposal_dataparser import FruitProposalDataParserConfig
+#from fruit_proposal.data.fruit_proposal_dataparser import FruitProposalDataParserConfig
 from nerfstudio.plugins.registry_dataparser import discover_dataparsers
 
 dataparsers = {
-    "fruit-proposal-data": FruitProposalDataParserConfig(),
+    #"fruit-proposal-data": FruitProposalDataParserConfig(),
     "nerfstudio-data": NerfstudioDataParserConfig(),
     "minimal-parser": MinimalDataParserConfig(),
     "arkit-data": ARKitScenesDataParserConfig(),

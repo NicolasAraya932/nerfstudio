@@ -562,6 +562,7 @@ def generate_point_cloud(
 
 
 
+"""
 def extract_fruit_proposal_outputs(
 
     pipeline: Pipeline,
@@ -777,7 +778,7 @@ def generate_fruit_proposal_radiance_cloud(
     depth_output_name: str = "depth",
     crop_obb: Optional[OrientedBox] = None,
 ) -> Dict[str, torch.Tensor]:
-    """Generate a radiance field dataset from a NeRF model.
+    Generate a radiance field dataset from a NeRF model.
 
     Args:
         pipeline: Pipeline to evaluate with.
@@ -789,7 +790,7 @@ def generate_fruit_proposal_radiance_cloud(
 
     Returns:
         A dictionary containing all radiance field data.
-    """
+    
 
     # Initialize progress bar
     progress = Progress(
@@ -913,6 +914,7 @@ def generate_fruit_proposal_radiance_cloud(
     }
 
     return radiance_field_data
+"""
 
 def generate_semantics_sample_point_cloud(
     pipeline: Pipeline,
