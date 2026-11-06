@@ -1,0 +1,3886 @@
+{
+ "index_version": 1,
+ "generated": "2026-10-13 12:36",
+ "generator": "/home/sir3po/Desktop/Repos/InvNeRF-Seg/scripts/repo_index/build_repo_indexes.py",
+ "folder": "nerfstudio",
+ "path_host": "/home/sir3po/Desktop/Repos/nerfstudio",
+ "path_container": "/workspace/Desktop/Repos/nerfstudio",
+ "kind": "git_repo",
+ "summary": "About: -->",
+ "git": {
+  "branch": "fruitnerf",
+  "head": "2b983d22",
+  "last_commit_date": "2026-02-17",
+  "last_commit_subject": "Apply local nerfstudio changes",
+  "remote": "https://github.com/NicolasAraya932/nerfstudio.git",
+  "commits": 2122
+ },
+ "stats": {
+  "files_indexed_tree": 468,
+  "size_indexed_tree": "283.3 MB",
+  "files_in_skipped_dirs": 403,
+  "listed_files": 307,
+  "top_extensions": {
+   ".py": 254,
+   ".png": 65,
+   ".md": 63,
+   ".rst": 31,
+   "(none)": 13,
+   ".json": 8,
+   ".yml": 7,
+   ".ipynb": 6,
+   ".js": 3,
+   ".html": 2,
+   ".npz": 2,
+   ".yaml": 1
+  }
+ },
+ "top_level": [
+  {
+   "path": ".devcontainer/",
+   "files": 2,
+   "size": "994 B",
+   "has_code": false
+  },
+  {
+   "path": ".github/",
+   "files": 6,
+   "size": "5.9 KB",
+   "has_code": false
+  },
+  {
+   "path": "colab/",
+   "files": 1,
+   "size": "15.0 KB",
+   "has_code": true
+  },
+  {
+   "path": "docs/",
+   "files": 169,
+   "size": "48.4 MB",
+   "has_code": true
+  },
+  {
+   "path": "nerfstudio/",
+   "files": 243,
+   "size": "2.8 MB",
+   "has_code": true
+  },
+  {
+   "path": "outputs/",
+   "files": 2,
+   "size": "231.6 MB",
+   "has_code": false
+  },
+  {
+   "path": "tests/",
+   "files": 34,
+   "size": "126.2 KB",
+   "has_code": true
+  },
+  {
+   "path": ".git/",
+   "files": 178,
+   "skipped": true
+  },
+  {
+   "path": ".vscode/",
+   "files": 3,
+   "skipped": true
+  }
+ ],
+ "entry_points": {
+  "console_scripts": [
+   "ns-install-cli = nerfstudio.scripts.completions.install:entrypoint",
+   "ns-process-data = nerfstudio.scripts.process_data:entrypoint",
+   "ns-download-data = nerfstudio.scripts.downloads.download_data:entrypoint",
+   "ns-train = nerfstudio.scripts.train:entrypoint",
+   "ns-viewer = nerfstudio.scripts.viewer.run_viewer:entrypoint",
+   "ns-eval = nerfstudio.scripts.eval:entrypoint",
+   "ns-render = nerfstudio.scripts.render:entrypoint",
+   "ns-export = nerfstudio.scripts.exporter:entrypoint",
+   "ns-dev-test = nerfstudio.scripts.github.run_actions:entrypoint",
+   "ns-dev-sync-viser-message-defs = nerfstudio.scripts.viewer.sync_viser_message_defs:entrypoint"
+  ],
+  "runnable_scripts": [
+   "nerfstudio/clustering/run_clustering.py",
+   "nerfstudio/clustering/run_clustering_sweep.py",
+   "nerfstudio/data/utils/fruit_nerf_dataset.py",
+   "nerfstudio/generative/deepfloyd.py",
+   "nerfstudio/generative/stable_diffusion.py",
+   "nerfstudio/scripts/blender/nerfstudio_blender.py",
+   "nerfstudio/scripts/completions/install.py",
+   "nerfstudio/scripts/datasets/process_nuscenes_masks.py",
+   "nerfstudio/scripts/datasets/process_project_aria.py",
+   "nerfstudio/scripts/docs/add_nb_tags.py",
+   "nerfstudio/scripts/docs/build_docs.py",
+   "nerfstudio/scripts/downloads/download_data.py",
+   "nerfstudio/scripts/eval.py",
+   "nerfstudio/scripts/exporter.py",
+   "nerfstudio/scripts/fruit_exporter.py",
+   "nerfstudio/scripts/fruit_process_data.py",
+   "nerfstudio/scripts/github/run_actions.py",
+   "nerfstudio/scripts/process_data.py",
+   "nerfstudio/scripts/render.py",
+   "nerfstudio/scripts/texture.py",
+   "nerfstudio/scripts/train.py",
+   "nerfstudio/scripts/viewer/run_viewer.py",
+   "nerfstudio/scripts/viewer/sync_viser_message_defs.py",
+   "nerfstudio/viewer/render_panel.py",
+   "nerfstudio/viewer_legacy/app/run_deploy.py",
+   "tests/cameras/test_cameras.py",
+   "tests/cameras/test_rays.py",
+   "tests/field_components/test_encodings.py",
+   "tests/field_components/test_field_outputs.py",
+   "tests/field_components/test_fields.py",
+   "tests/field_components/test_mlp.py",
+   "tests/field_components/test_temporal_distortions.py",
+   "tests/model_components/test_losses.py",
+   "tests/model_components/test_ray_sampler.py",
+   "tests/model_components/test_renderers.py",
+   "tests/scripts/test_exporter.py",
+   "tests/test_nerfacto_integration.py",
+   "tests/test_splatfacto_integration.py",
+   "tests/test_train.py",
+   "tests/utils/test_tensor_dataclass.py"
+  ]
+ },
+ "files": [
+  {
+   "path": ".prettierrc.js",
+   "size": "126 B",
+   "modified": "2025-07-31"
+  },
+  {
+   "path": "README.md",
+   "size": "21.1 KB",
+   "modified": "2025-07-31",
+   "title": "About",
+   "headings": [
+    "Sponsors",
+    "Quickstart",
+    "1. Installation: Setup the environment",
+    "Prerequisites",
+    "Create environment",
+    "Dependencies",
+    "Installing nerfstudio",
+    "2. Training your first model!",
+    "Download some test data:",
+    "Train model",
+    "Resume from checkpoint / visualize existing run",
+    "Visualize existing run"
+   ],
+   "description": "-->"
+  },
+  {
+   "path": ".pre-commit-config.yaml",
+   "size": "772 B",
+   "modified": "2025-07-31",
+   "description": "See https://pre-commit.com for more information See https://pre-commit.com/hooks.html for more hooks",
+   "top_keys": [
+    "default_language_version",
+    "repos"
+   ]
+  },
+  {
+   "path": "Dockerfile",
+   "size": "7.9 KB",
+   "modified": "2025-08-01",
+   "description": "syntax=docker/dockerfile:1"
+  },
+  {
+   "path": "LICENSE",
+   "size": "11.1 KB",
+   "modified": "2025-07-31",
+   "description": "Apache License"
+  },
+  {
+   "path": "pixi.toml",
+   "size": "1.8 KB",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "project",
+    "name",
+    "description",
+    "channels",
+    "platforms",
+    "system-requirements",
+    "libc",
+    "tasks",
+    "tcnn-install",
+    "make-third_party-dir",
+    "clone-hloc",
+    "hloc-install",
+    "post-install",
+    "download-dozer-data",
+    "train-example-splat",
+    "train-example-nerf",
+    "dependencies",
+    "python",
+    "pip",
+    "cuda"
+   ]
+  },
+  {
+   "path": "pyproject.toml",
+   "size": "6.5 KB",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "build-system",
+    "requires",
+    "build-backend",
+    "project",
+    "name",
+    "version",
+    "description",
+    "readme",
+    "license",
+    "requires-python",
+    "classifiers",
+    "dependencies",
+    "project.urls",
+    "project.optional-dependencies",
+    "gen",
+    "dev",
+    "docs",
+    "project.scripts",
+    "ns-install-cli",
+    "ns-process-data"
+   ],
+   "description": "All-in-one repository for state-of-the-art NeRFs"
+  },
+  {
+   "path": ".dockerignore",
+   "size": "3.3 KB",
+   "modified": "2025-07-31",
+   "description": "(none) file"
+  },
+  {
+   "path": ".gitattributes",
+   "size": "30 B",
+   "modified": "2025-07-31",
+   "description": "(none) file"
+  },
+  {
+   "path": ".gitignore",
+   "size": "3.3 KB",
+   "modified": "2025-07-31",
+   "description": "(none) file"
+  },
+  {
+   "path": "pixi.lock",
+   "size": "345.8 KB",
+   "modified": "2025-07-31",
+   "description": "lock file"
+  },
+  {
+   "path": ".devcontainer/devcontainer.json",
+   "size": "394 B",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "name",
+    "dockerComposeFile",
+    "service",
+    "workspaceFolder",
+    "shutdownAction",
+    "extensions"
+   ],
+   "description": "NerfStudio Dev Container"
+  },
+  {
+   "path": ".devcontainer/docker-compose.yml",
+   "size": "600 B",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "version",
+    "services"
+   ]
+  },
+  {
+   "path": ".github/ISSUE_TEMPLATE/bug-report.md",
+   "size": "535 B",
+   "modified": "2025-07-31",
+   "description": "--- name: Bug report about: Create a report to help us improve title: '' labels: '' assignees: ''"
+  },
+  {
+   "path": ".github/ISSUE_TEMPLATE/feature_request.md",
+   "size": "595 B",
+   "modified": "2025-07-31",
+   "description": "--- name: Feature request about: Suggest an idea for this project title: '' labels: '' assignees: ''"
+  },
+  {
+   "path": ".github/workflows/build_docker_image.yml",
+   "size": "1.9 KB",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "name",
+    "on",
+    "env",
+    "jobs"
+   ]
+  },
+  {
+   "path": ".github/workflows/core_code_checks.yml",
+   "size": "1.2 KB",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "name",
+    "on",
+    "permissions",
+    "jobs"
+   ]
+  },
+  {
+   "path": ".github/workflows/doc.yml",
+   "size": "849 B",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "name",
+    "on",
+    "permissions",
+    "jobs"
+   ]
+  },
+  {
+   "path": ".github/workflows/publish.yml",
+   "size": "951 B",
+   "modified": "2025-07-31",
+   "description": "This workflows will upload a Python Package using twine when a release is created For more information see: https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries",
+   "top_keys": [
+    "name",
+    "on",
+    "jobs"
+   ]
+  },
+  {
+   "path": "colab/demo.ipynb",
+   "size": "15.0 KB",
+   "modified": "2025-07-31",
+   "cells": 7,
+   "description": "<a href=\"https://colab.research.google.com/github/nerfstudio-project/nerfstudio/blob/alex%2Fcolab-logo-fix/colab/demo.ipynb\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+  },
+  {
+   "path": "docs/index.md",
+   "size": "10.3 KB",
+   "modified": "2025-07-31",
+   "title": "Contents",
+   "headings": [
+    "Supported Methods",
+    "Included Methods",
+    "Third-party Methods",
+    "Quicklinks",
+    "Sponsors",
+    "Built On",
+    "Citation",
+    "Contributors",
+    "Maintainers"
+   ],
+   "description": "--- myst: substitutions: luma: | ```{image} _static/imgs/luma_light.png :alt: Luma AI :width: 300px :class: only-light :target: https://lumalabs.ai/ ```"
+  },
+  {
+   "path": "docs/conf.py",
+   "size": "4.1 KB",
+   "modified": "2025-07-31",
+   "description": "Configuration file for the Sphinx documentation builder. This file only contains a selection of the most common options. For a full list see the documentation: https://www.sphinx-doc.org/en/master/usage/configuration.html -- Path setup --------------------------------------------------------------…"
+  },
+  {
+   "path": "docs/Makefile",
+   "size": "675 B",
+   "modified": "2025-07-31",
+   "description": "Minimal makefile for Sphinx documentation",
+   "top_keys": [
+    "SOURCEDIR",
+    "BUILDDIR",
+    "help"
+   ]
+  },
+  {
+   "path": "docs/_pygments/style.py",
+   "size": "2.7 KB",
+   "modified": "2025-07-31",
+   "description": "Custom Pygments styles for the Sphinx documentation.",
+   "defines": [
+    "NerfstudioStyleLight",
+    "NerfstudioStyleDark"
+   ]
+  },
+  {
+   "path": "docs/_static/custom.js",
+   "size": "138 B",
+   "modified": "2025-07-31"
+  },
+  {
+   "path": "docs/_static/require.min.js",
+   "size": "17.1 KB",
+   "modified": "2025-07-31"
+  },
+  {
+   "path": "docs/_templates/base.html",
+   "size": "3.0 KB",
+   "modified": "2025-07-31",
+   "description": "HTML page: {{ title|striptags|e }}"
+  },
+  {
+   "path": "docs/_templates/sidebar/brand.html",
+   "size": "3.1 KB",
+   "modified": "2025-07-31",
+   "description": "{#- Hi there! You might be interested in"
+  },
+  {
+   "path": "docs/extensions/blender_addon.md",
+   "size": "18.7 KB",
+   "modified": "2025-07-31",
+   "title": "Blender VFX add-on",
+   "headings": [
+    "Overview",
+    "Add-on Setup Instructions",
+    "Scene Setup",
+    "Generate Nerfstudio JSON Camera Path from Blender Camera",
+    "Examples",
+    "Additional details",
+    "Create Blender Camera from Nerfstudio JSON Camera Path",
+    "Additional details",
+    "Compositing NeRF Objects in NeRF Environments",
+    "Additional Details",
+    "Examples",
+    "Implementation Details"
+   ],
+   "description": "This Blender add-on allows for compositing with a Nerfstudio render as a background layer by generating a camera path JSON file from the Blender camera path, as well as a way to import Nerfstudio JSON files as a Blender camera baked with the Nerfstudio camera path. This add-on also allows compositi…"
+  },
+  {
+   "path": "docs/extensions/maya_plugin.md",
+   "size": "8.8 KB",
+   "modified": "2025-07-31",
+   "title": "Autodesk Maya Plug-in",
+   "headings": [
+    "Overview",
+    "Loading the plugin",
+    "Setting up the scene",
+    "Exporting a camera path from Maya into Nerfstudio",
+    "Generating the JSON File",
+    "Rendering in Nerfstudio",
+    "Exporting a camera path from Nerfstudio into Maya",
+    "Bringing it together!",
+    "Implementation",
+    "Credits"
+   ],
+   "description": "**[Link to the plug-in](https://github.com/nerfstudio-project/nerfstudio/tree/main/nerfstudio/scripts/maya)**"
+  },
+  {
+   "path": "docs/extensions/sdfstudio.md",
+   "size": "1.3 KB",
+   "modified": "2025-07-31",
+   "title": "SDFStudio",
+   "headings": [
+    "Overview",
+    "Surface models in nerfstudio",
+    "Citation"
+   ],
+   "description": "[project website](https://autonomousvision.github.io/sdfstudio/)"
+  },
+  {
+   "path": "docs/extensions/unreal_engine.md",
+   "size": "1.2 KB",
+   "modified": "2025-07-31",
+   "title": "Exporting to Unreal Engine",
+   "headings": [
+    "Overview",
+    "Exporting your model to NVOL"
+   ],
+   "description": "```{image} imgs/desolation_unreal.png :width: 800 :align: center :alt: NeRF in Unreal Engine ```"
+  },
+  {
+   "path": "docs/nerfology/model_components/visualize_cameras.ipynb",
+   "size": "7.2 MB",
+   "modified": "2025-07-31",
+   "cells": 10,
+   "description": "Camera Models Everything starts with the cameras. Given a set of images, we need a way to project their pixels into 3D space. This is accomplished by computing the camera ray for each pixel given information about the type of camera and the location of the camera. This guide describes the camera mo…"
+  },
+  {
+   "path": "docs/nerfology/model_components/visualize_encoders.ipynb",
+   "size": "928.0 KB",
+   "modified": "2025-07-31",
+   "cells": 9,
+   "description": "Field Encoders"
+  },
+  {
+   "path": "docs/nerfology/model_components/visualize_samplers.ipynb",
+   "size": "3.9 MB",
+   "modified": "2025-07-31",
+   "cells": 5,
+   "description": "Ray Samplers ## Overview Once we have a set of cameras, we want to cast camera rays associated with each pixel. Along these ray we will sample the _field_ and aggregate the samples to predict the pixels value (ie. color). The parameterization of the samples are described [here](./visualize_samples.…"
+  },
+  {
+   "path": "docs/nerfology/model_components/visualize_samples.ipynb",
+   "size": "6.8 MB",
+   "modified": "2025-07-31",
+   "cells": 7,
+   "description": "Sample Representation A core component of volumetric rendering is computing samples along a ray. The representation of these samples is important. We use conical frustums to represent samples. The conical frustums are defined via the following parameters: ```{image} imgs/frustums.png :align: center…"
+  },
+  {
+   "path": "docs/nerfology/model_components/visualize_spatial_distortions.ipynb",
+   "size": "14.7 MB",
+   "modified": "2025-07-31",
+   "description": "Notebook (14.7 MB)"
+  },
+  {
+   "path": "docs/nerfology/model_components/index.md",
+   "size": "526 B",
+   "modified": "2025-07-31",
+   "title": "Model components",
+   "description": "It can be difficult getting started with NeRFs. The research field is still quite new and most of the key nuggets are buried in academic papers. For this reason, we have consolidated many of the key concepts into a series of guides."
+  },
+  {
+   "path": "docs/quickstart/custom_dataset.md",
+   "size": "22.1 KB",
+   "modified": "2025-07-31",
+   "title": "Using custom data",
+   "headings": [
+    "Images or Video",
+    "Processing Data",
+    "Training on your data",
+    "Training and evaluation on separate data",
+    "Installing COLMAP",
+    "Polycam Capture",
+    "Setting up Polycam",
+    "Process data",
+    "KIRI Engine Capture",
+    "Setting up KIRI Engine",
+    "Process data",
+    "Record3D Capture"
+   ],
+   "description": "Training model on existing datasets is only so fun. If you would like to train on self captured data you will need to process the data into the nerfstudio format. Specifically we need to know the camera poses for each image."
+  },
+  {
+   "path": "docs/quickstart/data_conventions.md",
+   "size": "4.4 KB",
+   "modified": "2025-07-31",
+   "title": "Data conventions",
+   "headings": [
+    "Coordinate conventions",
+    "Camera/view space",
+    "World space",
+    "Pixel coordinates",
+    "Dataset format",
+    "Camera intrinsics",
+    "Camera extrinsics",
+    "Depth images",
+    "Masks"
+   ],
+   "description": "Here we explain the coordinate conventions for using our repo."
+  },
+  {
+   "path": "docs/quickstart/existing_dataset.md",
+   "size": "5.5 KB",
+   "modified": "2025-07-31",
+   "title": "Using existing data",
+   "headings": [
+    "Example",
+    "Download all scenes from the Blender dataset, including the \"classic\" Lego model",
+    "Download the subset of data used in the SIGGRAPH 2023 Nerfstudio paper",
+    "Download a few room-scale scenes from the EyefulTower dataset at different reso…",
+    "Download the full D-NeRF dataset of dynamic synthetic scenes",
+    "Dataset Summary",
+    "Scene Size: Number of RGB Images",
+    "Scene RGB Resolutions: `max(width, height)`",
+    "Eyeful Tower"
+   ],
+   "description": "Nerfstudio comes with built-in support for a number of datasets, which can be downloaded with the [`ns-download-data` command][cli]. Each of the built-in datasets comes ready to use with various Nerfstudio methods (e.g. the recommended default Nerfacto), allowing you to get started in the blink of…"
+  },
+  {
+   "path": "docs/quickstart/export_geometry.md",
+   "size": "2.0 KB",
+   "modified": "2025-07-31",
+   "title": "Export geometry",
+   "headings": [
+    "Exporting a mesh",
+    "1. TSDF Fusion",
+    "2. Poisson surface reconstruction",
+    "Exporting a point cloud",
+    "Other exporting methods",
+    "Texturing an existing mesh with NeRF",
+    "Dependencies"
+   ],
+   "description": "Here we document how to export point clouds and meshes from nerfstudio. The main command you'll be working with is `ns-export`. Our point clouds are exported as `.ply` files and the textured meshes are exported as `.obj` files."
+  },
+  {
+   "path": "docs/quickstart/first_nerf.md",
+   "size": "8.5 KB",
+   "modified": "2025-07-31",
+   "title": "Training your first model",
+   "headings": [
+    "Train and run viewer",
+    "Download some test data:",
+    "Train model",
+    "Resume from checkpoint",
+    "Visualize existing run",
+    "Exporting Results",
+    "Render Video",
+    "Generate Point Cloud",
+    "Intro to nerfstudio CLI and Configs",
+    "Comet / Tensorboard / WandB / Viewer",
+    "Evaluating Runs",
+    "Multi-GPU Training"
+   ],
+   "description": "The following will train a _nerfacto_ model, our recommended model for real world scenes."
+  },
+  {
+   "path": "docs/quickstart/installation.md",
+   "size": "16.3 KB",
+   "modified": "2025-07-31",
+   "title": "Installation",
+   "headings": [
+    "Prerequisites",
+    "Create environment",
+    "Dependencies",
+    "PyTorch",
+    "Install tiny-cuda-nn",
+    "Installing nerfstudio",
+    "Using Pixi",
+    "Prerequisites",
+    "Install Pixi Environmnent",
+    "Use docker image",
+    "Prerequisites",
+    "Using an interactive container"
+   ],
+   "description": "::::::{tab-set} :::::{tab-item} Linux"
+  },
+  {
+   "path": "docs/quickstart/viewer_quickstart.rst",
+   "size": "4.5 KB",
+   "modified": "2025-07-31",
+   "description": "Using the viewer ================"
+  },
+  {
+   "path": "nerfstudio/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/cameras/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/cameras/camera_optimizers.py",
+   "size": "8.6 KB",
+   "modified": "2026-02-17",
+   "description": "Pose and Intrinsics Optimizers",
+   "defines": [
+    "CameraOptimizerConfig",
+    "CameraOptimizer"
+   ]
+  },
+  {
+   "path": "nerfstudio/cameras/camera_paths.py",
+   "size": "6.5 KB",
+   "modified": "2026-02-17",
+   "description": "Code for camera paths.",
+   "defines": [
+    "get_interpolated_camera_path",
+    "get_spiral_path",
+    "get_path_from_json"
+   ]
+  },
+  {
+   "path": "nerfstudio/cameras/camera_utils.py",
+   "size": "34.7 KB",
+   "modified": "2026-02-17",
+   "description": "Camera transformation helper code.",
+   "defines": [
+    "unit_vector",
+    "quaternion_from_matrix",
+    "quaternion_slerp",
+    "quaternion_matrix",
+    "get_interpolated_poses",
+    "get_interpolated_k",
+    "get_interpolated_time",
+    "get_ordered_poses_and_k_and_time",
+    "get_interpolated_poses_many",
+    "normalize",
+    "normalize_with_norm",
+    "viewmatrix",
+    "get_distortion_params",
+    "radial_and_tangential_undistort",
+    "rotation_matrix_between",
+    "focus_of_attention",
+    "auto_orient_and_center_poses",
+    "fisheye624_project",
+    "fisheye624_unproject_helper",
+    "fisheye624_unproject"
+   ]
+  },
+  {
+   "path": "nerfstudio/cameras/cameras.py",
+   "size": "51.8 KB",
+   "modified": "2026-02-17",
+   "description": "Camera Models",
+   "defines": [
+    "CameraType",
+    "Cameras"
+   ]
+  },
+  {
+   "path": "nerfstudio/cameras/lie_groups.py",
+   "size": "4.7 KB",
+   "modified": "2026-02-17",
+   "description": "Helper for Lie group operations. Currently only used for pose optimization.",
+   "defines": [
+    "exp_map_SO3xR3",
+    "exp_map_SE3"
+   ]
+  },
+  {
+   "path": "nerfstudio/cameras/rays.py",
+   "size": "11.6 KB",
+   "modified": "2026-02-17",
+   "description": "Some ray datastructures.",
+   "defines": [
+    "Frustums",
+    "RaySamples",
+    "RayBundle"
+   ]
+  },
+  {
+   "path": "nerfstudio/clustering/clustering_base.py",
+   "size": "21.1 KB",
+   "modified": "2026-02-17",
+   "description": "Copyright (c) 2023 Lukas Meyer Licensed under the MIT License. See LICENSE file for more information.",
+   "defines": [
+    "create_sphere",
+    "check_point_cloud_for_spherical_shape",
+    "draw_registration_result",
+    "load_obj_file",
+    "FruitClustering"
+   ]
+  },
+  {
+   "path": "nerfstudio/clustering/config_real.py",
+   "size": "7.8 KB",
+   "modified": "2026-02-17",
+   "description": "Baum 01"
+  },
+  {
+   "path": "nerfstudio/clustering/config_synthetic.py",
+   "size": "6.6 KB",
+   "modified": "2026-02-17",
+   "description": "01: Apple"
+  },
+  {
+   "path": "nerfstudio/clustering/run_clustering.py",
+   "size": "5.6 KB",
+   "modified": "2026-02-17",
+   "description": "Copyright (c) 2023 Lukas Meyer Licensed under the MIT License. See LICENSE file for more information.",
+   "defines": [
+    "Clustering"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/clustering/run_clustering_sweep.py",
+   "size": "8.7 KB",
+   "modified": "2026-02-17",
+   "description": "Copyright (c) 2023 Lukas Meyer Licensed under the MIT License. See LICENSE file for more information.",
+   "defines": [
+    "Clustering"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/configs/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/configs/base_config.py",
+   "size": "5.9 KB",
+   "modified": "2026-02-17",
+   "description": "Base Configs",
+   "defines": [
+    "PrintableConfig",
+    "InstantiateConfig",
+    "MachineConfig",
+    "LocalWriterConfig",
+    "LoggingConfig",
+    "ViewerConfig"
+   ]
+  },
+  {
+   "path": "nerfstudio/configs/config_utils.py",
+   "size": "1.5 KB",
+   "modified": "2026-02-17",
+   "description": "Some utility code for configs.",
+   "defines": [
+    "to_immutable_dict",
+    "convert_markup_to_ansi"
+   ]
+  },
+  {
+   "path": "nerfstudio/configs/dataparser_configs.py",
+   "size": "3.9 KB",
+   "modified": "2026-02-17",
+   "description": "Aggregate all the dataparser configs in one location."
+  },
+  {
+   "path": "nerfstudio/configs/experiment_config.py",
+   "size": "5.6 KB",
+   "modified": "2026-02-17",
+   "description": "Config used for running an experiment",
+   "defines": [
+    "ExperimentConfig"
+   ]
+  },
+  {
+   "path": "nerfstudio/configs/external_methods.py",
+   "size": "13.6 KB",
+   "modified": "2026-02-17",
+   "description": "This file contains the configuration for external methods which are not included in this repository.",
+   "defines": [
+    "ExternalMethod",
+    "ExternalMethodDummyTrainerConfig",
+    "get_external_methods"
+   ]
+  },
+  {
+   "path": "nerfstudio/configs/method_configs.py",
+   "size": "34.7 KB",
+   "modified": "2026-02-17",
+   "description": "Put all the method implementations in one location.",
+   "defines": [
+    "merge_methods",
+    "sort_methods"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/data/pixel_samplers.py",
+   "size": "24.6 KB",
+   "modified": "2026-02-17",
+   "description": "Code for sampling pixels.",
+   "defines": [
+    "PixelSamplerConfig",
+    "PixelSampler",
+    "PatchPixelSamplerConfig",
+    "PatchPixelSampler",
+    "PairPixelSamplerConfig",
+    "PairPixelSampler"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/scene_box.py",
+   "size": "6.2 KB",
+   "modified": "2026-02-17",
+   "description": "Dataset input structures.",
+   "defines": [
+    "SceneBox",
+    "OrientedBox"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datamanagers/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/data/datamanagers/base_datamanager.py",
+   "size": "24.2 KB",
+   "modified": "2026-02-17",
+   "description": "Datamanager.",
+   "defines": [
+    "DataManagerConfig",
+    "DataManager",
+    "VanillaDataManagerConfig",
+    "VanillaDataManager"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datamanagers/fruit_datamanager.py",
+   "size": "8.3 KB",
+   "modified": "2026-02-17",
+   "description": "Fruit tamanager.",
+   "defines": [
+    "FruitDataManagerConfig",
+    "get_corners_of_aabb",
+    "sample_surface_points",
+    "FruitDataManager"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datamanagers/full_images_datamanager.py",
+   "size": "21.5 KB",
+   "modified": "2026-02-17",
+   "description": "Data manager that outputs cameras / images instead of raybundles",
+   "defines": [
+    "FullImageDatamanagerConfig",
+    "FullImageDatamanager"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datamanagers/parallel_datamanager.py",
+   "size": "13.3 KB",
+   "modified": "2026-02-17",
+   "description": "Parallel data manager that generates training data in multiple python processes.",
+   "defines": [
+    "ParallelDataManagerConfig",
+    "ParallelDataManager"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datamanagers/parallelfruit_datamanager.py",
+   "size": "6.4 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "get_corners_of_aabb",
+    "sample_surface_points",
+    "ParallelFruitDataManagerConfig",
+    "ParallelFruitDataManager"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datamanagers/random_cameras_datamanager.py",
+   "size": "11.6 KB",
+   "modified": "2026-02-17",
+   "description": "Data manager without input images, only random camera poses",
+   "defines": [
+    "TrivialDataset",
+    "random_train_pose",
+    "RandomCamerasDataManagerConfig",
+    "RandomCamerasDataManager"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/arkitscenes_dataparser.py",
+   "size": "9.0 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for ARKitScenes dataset",
+   "defines": [
+    "traj_string_to_matrix",
+    "ARKitScenesDataParserConfig",
+    "ARKitScenes"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/base_dataparser.py",
+   "size": "7.4 KB",
+   "modified": "2026-02-17",
+   "description": "A set of standard datasets.",
+   "defines": [
+    "Semantics",
+    "DataparserOutputs",
+    "DataParserConfig",
+    "DataParser",
+    "transform_poses_to_original_space"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/blender_dataparser.py",
+   "size": "4.9 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for blender dataset",
+   "defines": [
+    "BlenderDataParserConfig",
+    "Blender"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/colmap_dataparser.py",
+   "size": "33.8 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for nerfstudio datasets.",
+   "defines": [
+    "ColmapDataParserConfig",
+    "ColmapDataParser"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/dnerf_dataparser.py",
+   "size": "3.7 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for blender dataset",
+   "defines": [
+    "DNeRFDataParserConfig",
+    "DNeRF"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/dycheck_dataparser.py",
+   "size": "13.4 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for DyCheck (https://arxiv.org/abs/2210.13445) dataset of `iphone` subset",
+   "defines": [
+    "downscale",
+    "upscale",
+    "rescale",
+    "DycheckDataParserConfig",
+    "Dycheck"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/fruitnerf_dataparser.py",
+   "size": "13.6 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for nerfstudio datasets.",
+   "defines": [
+    "FruitNerfDataParserConfig",
+    "FruitNerf"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/instant_ngp_dataparser.py",
+   "size": "8.9 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for instant ngp data",
+   "defines": [
+    "InstantNGPDataParserConfig",
+    "InstantNGP"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/minimal_dataparser.py",
+   "size": "4.2 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for pre-prepared datasets for all cameras, with no additional processing needed Optional fields - semantics, mask_filenames, cameras.distortion_params, cameras.times",
+   "defines": [
+    "MinimalDataParserConfig",
+    "MinimalDataParser"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/nerfosr_dataparser.py",
+   "size": "8.3 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for NeRF-OSR datasets",
+   "defines": [
+    "get_camera_params",
+    "NeRFOSRDataParserConfig",
+    "NeRFOSR"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/nerfstudio_dataparser.py",
+   "size": "22.7 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for nerfstudio datasets.",
+   "defines": [
+    "NerfstudioDataParserConfig",
+    "Nerfstudio"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/nerfstudio_ls3_dataparser.py",
+   "size": "28.1 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for nerfstudio datasets.",
+   "defines": [
+    "NerfstudioLs3DataParserConfig",
+    "NerfstudioLs3"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/nuscenes_dataparser.py",
+   "size": "8.6 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for NuScenes dataset",
+   "defines": [
+    "rotation_translation_to_pose",
+    "NuScenesDataParserConfig",
+    "NuScenes"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/phototourism_dataparser.py",
+   "size": "6.8 KB",
+   "modified": "2026-02-17",
+   "description": "Phototourism dataset parser. Datasets and documentation here: http://phototour.cs.washington.edu/datasets/",
+   "defines": [
+    "PhototourismDataParserConfig",
+    "Phototourism"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/scannet_dataparser.py",
+   "size": "8.9 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for ScanNet dataset",
+   "defines": [
+    "ScanNetDataParserConfig",
+    "ScanNet"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/scannetpp_dataparser.py",
+   "size": "7.9 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for ScanNet++ datasets.",
+   "defines": [
+    "ScanNetppDataParserConfig",
+    "ScanNetpp"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/sdfstudio_dataparser.py",
+   "size": "5.8 KB",
+   "modified": "2026-02-17",
+   "description": "Datapaser for sdfstudio formatted data",
+   "defines": [
+    "SDFStudioDataParserConfig",
+    "SDFStudio"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/sitcoms3d_dataparser.py",
+   "size": "5.8 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser for sitcoms3D dataset.",
+   "defines": [
+    "Sitcoms3DDataParserConfig",
+    "Sitcoms3D"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datasets/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/data/datasets/base_dataset.py",
+   "size": "7.9 KB",
+   "modified": "2026-02-17",
+   "description": "Dataset.",
+   "defines": [
+    "InputDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datasets/depth_dataset.py",
+   "size": "6.0 KB",
+   "modified": "2026-02-17",
+   "description": "Depth dataset.",
+   "defines": [
+    "DepthDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datasets/fruit_dataset.py",
+   "size": "3.6 KB",
+   "modified": "2026-02-17",
+   "description": "Semantic dataset.",
+   "defines": [
+    "get_semantics_and_mask_tensors_from_path",
+    "FruitDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datasets/sdf_dataset.py",
+   "size": "3.8 KB",
+   "modified": "2026-02-17",
+   "description": "SDFStudio dataset.",
+   "defines": [
+    "SDFDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/datasets/semantic_dataset.py",
+   "size": "2.1 KB",
+   "modified": "2026-02-17",
+   "description": "Semantic dataset.",
+   "defines": [
+    "SemanticDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/utils/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/data/utils/colmap_parsing_utils.py",
+   "size": "20.0 KB",
+   "modified": "2026-02-17",
+   "description": "This file copied with small modifications from: * https://github.com/colmap/colmap/blob/1a4d0bad2e90aa65ce997c9d1779518eaed998d5/scripts/python/read_write_model.py",
+   "defines": [
+    "Image",
+    "read_next_bytes",
+    "write_next_bytes",
+    "read_cameras_text",
+    "read_cameras_binary",
+    "write_cameras_text",
+    "write_cameras_binary",
+    "read_images_text",
+    "read_images_binary",
+    "write_images_text",
+    "write_images_binary",
+    "read_points3D_text",
+    "read_points3D_binary",
+    "write_points3D_text",
+    "write_points3D_binary",
+    "detect_model_format",
+    "read_model",
+    "write_model",
+    "qvec2rotmat",
+    "rotmat2qvec"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/utils/data_utils.py",
+   "size": "4.5 KB",
+   "modified": "2026-02-17",
+   "description": "Utility functions to allow easy re-use of common operations across dataloaders",
+   "defines": [
+    "pil_to_numpy",
+    "get_image_mask_tensor_from_path",
+    "get_semantics_and_mask_tensors_from_path",
+    "get_depth_image_from_path",
+    "identity_collate"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/utils/dataloaders.py",
+   "size": "33.6 KB",
+   "modified": "2026-02-17",
+   "description": "Code for sampling images from a dataset of images.",
+   "defines": [
+    "variable_res_collate",
+    "undistort_view",
+    "CacheDataloader",
+    "RayBatchStream",
+    "ImageBatchStream",
+    "EvalDataloader",
+    "FixedIndicesEvalDataloader",
+    "RandIndicesEvalDataloader"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/utils/dataparsers_utils.py",
+   "size": "3.5 KB",
+   "modified": "2026-02-17",
+   "description": "Data parser utils for nerfstudio datasets.",
+   "defines": [
+    "get_train_eval_split_fraction",
+    "get_train_eval_split_filename",
+    "get_train_eval_split_interval",
+    "get_train_eval_split_all"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/utils/fruit_nerf_dataset.py",
+   "size": "16.4 KB",
+   "modified": "2026-02-17",
+   "description": "Processes an image sequence to a nerfstudio compatible dataset.",
+   "defines": [
+    "BaseImageSegmentation",
+    "GroundedSAM",
+    "SegmentImages",
+    "FruitNerfDataset"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/data/utils/nerfstudio_collate.py",
+   "size": "10.1 KB",
+   "modified": "2026-02-17",
+   "description": "Custom collate function that includes cases for nerfstudio types.",
+   "defines": [
+    "nerfstudio_collate"
+   ]
+  },
+  {
+   "path": "nerfstudio/data/utils/pixel_sampling_utils.py",
+   "size": "3.7 KB",
+   "modified": "2026-02-17",
+   "description": "Pixel sampling utils such as eroding of valid masks that we sample from.",
+   "defines": [
+    "dilate",
+    "erode",
+    "erode_mask",
+    "divide_rays_per_image"
+   ]
+  },
+  {
+   "path": "nerfstudio/engine/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/engine/callbacks.py",
+   "size": "4.3 KB",
+   "modified": "2026-02-17",
+   "description": "Callback code used for training iterations",
+   "defines": [
+    "TrainingCallbackAttributes",
+    "TrainingCallbackLocation",
+    "TrainingCallback"
+   ]
+  },
+  {
+   "path": "nerfstudio/engine/optimizers.py",
+   "size": "8.2 KB",
+   "modified": "2026-02-17",
+   "description": "Optimizers class.",
+   "defines": [
+    "OptimizerConfig",
+    "AdamOptimizerConfig",
+    "RAdamOptimizerConfig",
+    "Optimizers"
+   ]
+  },
+  {
+   "path": "nerfstudio/engine/schedulers.py",
+   "size": "6.0 KB",
+   "modified": "2026-02-17",
+   "description": "Scheduler Classes",
+   "defines": [
+    "SchedulerConfig",
+    "Scheduler",
+    "MultiStepSchedulerConfig",
+    "MultiStepScheduler",
+    "ExponentialDecaySchedulerConfig",
+    "ExponentialDecayScheduler",
+    "CosineDecaySchedulerConfig",
+    "CosineDecayScheduler"
+   ]
+  },
+  {
+   "path": "nerfstudio/engine/trainer.py",
+   "size": "27.2 KB",
+   "modified": "2026-02-17",
+   "description": "Code to train model.",
+   "defines": [
+    "TrainerConfig",
+    "Trainer"
+   ]
+  },
+  {
+   "path": "nerfstudio/exporter/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/exporter/exporter_utils copy 2.py",
+   "size": "48.2 KB",
+   "modified": "2026-02-17",
+   "description": "Export utils such as structs, point cloud generation, and rendering code.",
+   "defines": [
+    "Mesh",
+    "get_mesh_from_pymeshlab_mesh",
+    "get_mesh_from_filename",
+    "common_resolution_from_largest_aabb",
+    "export_voxel_alpha_grid",
+    "generate_radiance_fields_cloud",
+    "generate_point_cloud",
+    "extract_fruit_proposal_outputs",
+    "generate_fruit_proposal_radiance_cloud",
+    "generate_semantics_sample_point_cloud",
+    "render_trajectory",
+    "collect_camera_poses_for_dataset",
+    "collect_camera_poses"
+   ]
+  },
+  {
+   "path": "nerfstudio/exporter/exporter_utils copy 3.py",
+   "size": "48.4 KB",
+   "modified": "2026-02-17",
+   "description": "Export utils such as structs, point cloud generation, and rendering code.",
+   "defines": [
+    "Mesh",
+    "get_mesh_from_pymeshlab_mesh",
+    "get_mesh_from_filename",
+    "common_resolution_from_largest_aabb",
+    "export_voxel_alpha_grid",
+    "generate_radiance_fields_cloud",
+    "generate_point_cloud",
+    "extract_fruit_proposal_outputs",
+    "generate_fruit_proposal_radiance_cloud",
+    "generate_semantics_sample_point_cloud",
+    "render_trajectory",
+    "collect_camera_poses_for_dataset",
+    "collect_camera_poses"
+   ]
+  },
+  {
+   "path": "nerfstudio/exporter/exporter_utils copy.py",
+   "size": "44.0 KB",
+   "modified": "2026-02-17",
+   "description": "Export utils such as structs, point cloud generation, and rendering code.",
+   "defines": [
+    "Mesh",
+    "get_mesh_from_pymeshlab_mesh",
+    "get_mesh_from_filename",
+    "common_resolution_from_largest_aabb",
+    "export_voxel_alpha_grid",
+    "generate_radiance_fields_cloud",
+    "generate_point_cloud",
+    "extract_fruit_proposal_outputs",
+    "generate_fruit_proposal_radiance_cloud",
+    "generate_semantics_sample_point_cloud",
+    "render_trajectory",
+    "collect_camera_poses_for_dataset",
+    "collect_camera_poses"
+   ]
+  },
+  {
+   "path": "nerfstudio/exporter/exporter_utils.py",
+   "size": "51.5 KB",
+   "modified": "2026-02-17",
+   "description": "Export utils such as structs, point cloud generation, and rendering code.",
+   "defines": [
+    "Mesh",
+    "get_mesh_from_pymeshlab_mesh",
+    "get_mesh_from_filename",
+    "common_resolution_from_largest_aabb",
+    "export_voxel_alpha_grid",
+    "generate_radiance_fields_cloud",
+    "generate_point_cloud",
+    "extract_fruit_proposal_outputs",
+    "generate_fruit_proposal_radiance_cloud",
+    "generate_semantics_sample_point_cloud",
+    "render_trajectory",
+    "collect_camera_poses_for_dataset",
+    "collect_camera_poses"
+   ]
+  },
+  {
+   "path": "nerfstudio/exporter/marching_cubes.py",
+   "size": "10.5 KB",
+   "modified": "2026-02-17",
+   "description": "This module implements the Marching Cubes algorithm for extracting isosurfaces",
+   "defines": [
+    "create_point_pyramid",
+    "evaluate_sdf",
+    "evaluate_multiresolution_sdf",
+    "generate_mesh_with_multires_marching_cubes"
+   ]
+  },
+  {
+   "path": "nerfstudio/exporter/texture_utils.py",
+   "size": "20.6 KB",
+   "modified": "2026-02-17",
+   "description": "Texture utils.",
+   "defines": [
+    "get_parallelogram_area",
+    "get_texture_image",
+    "unwrap_mesh_per_uv_triangle",
+    "unwrap_mesh_with_xatlas",
+    "export_textured_mesh"
+   ]
+  },
+  {
+   "path": "nerfstudio/exporter/tsdf_utils.py",
+   "size": "15.2 KB",
+   "modified": "2026-02-17",
+   "description": "TSDF utils.",
+   "defines": [
+    "TSDF",
+    "export_tsdf_mesh"
+   ]
+  },
+  {
+   "path": "nerfstudio/field_components/__init__.py",
+   "size": "867 B",
+   "modified": "2026-02-17",
+   "description": "init field modules"
+  },
+  {
+   "path": "nerfstudio/field_components/activations.py",
+   "size": "1.7 KB",
+   "modified": "2026-02-17",
+   "description": "Special activation functions."
+  },
+  {
+   "path": "nerfstudio/field_components/base_field_component.py",
+   "size": "2.1 KB",
+   "modified": "2026-02-17",
+   "description": "The field module baseclass.",
+   "defines": [
+    "FieldComponent"
+   ]
+  },
+  {
+   "path": "nerfstudio/field_components/embedding.py",
+   "size": "1.7 KB",
+   "modified": "2026-02-17",
+   "description": "Code for embeddings.",
+   "defines": [
+    "Embedding"
+   ]
+  },
+  {
+   "path": "nerfstudio/field_components/encodings.py",
+   "size": "32.0 KB",
+   "modified": "2026-02-17",
+   "description": "Encoding functions",
+   "defines": [
+    "Encoding",
+    "Identity",
+    "ScalingAndOffset",
+    "NeRFEncoding",
+    "FFEncoding",
+    "RFFEncoding",
+    "PolyhedronFFEncoding",
+    "HashEncoding",
+    "TensorCPEncoding",
+    "TensorVMEncoding",
+    "TriplaneEncoding",
+    "KPlanesEncoding",
+    "SHEncoding"
+   ]
+  },
+  {
+   "path": "nerfstudio/field_components/field_heads.py",
+   "size": "6.9 KB",
+   "modified": "2026-02-17",
+   "description": "Collection of render heads",
+   "defines": [
+    "FieldHeadNames",
+    "FieldHead",
+    "DensityFieldHead",
+    "RGBFieldHead",
+    "SHFieldHead",
+    "UncertaintyFieldHead",
+    "TransientRGBFieldHead",
+    "TransientDensityFieldHead",
+    "SemanticFieldHead",
+    "PredNormalsFieldHead"
+   ]
+  },
+  {
+   "path": "nerfstudio/field_components/mlp.py",
+   "size": "11.7 KB",
+   "modified": "2026-02-17",
+   "description": "Multi Layer Perceptron",
+   "defines": [
+    "activation_to_tcnn_string",
+    "MLP",
+    "MLPWithHashEncoding"
+   ]
+  },
+  {
+   "path": "nerfstudio/field_components/spatial_distortions.py",
+   "size": "3.2 KB",
+   "modified": "2026-02-17",
+   "description": "Space distortions.",
+   "defines": [
+    "SpatialDistortion",
+    "SceneContraction"
+   ]
+  },
+  {
+   "path": "nerfstudio/field_components/temporal_distortions.py",
+   "size": "3.4 KB",
+   "modified": "2026-02-17",
+   "description": "Space distortions which occur as a function of time.",
+   "defines": [
+    "TemporalDistortion",
+    "TemporalDistortionKind",
+    "DNeRFDistortion"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/fields/base_field.py",
+   "size": "5.4 KB",
+   "modified": "2026-02-17",
+   "description": "Base class for the graphs.",
+   "defines": [
+    "FieldConfig",
+    "Field",
+    "get_normalized_directions"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/density_fields.py",
+   "size": "4.6 KB",
+   "modified": "2026-02-17",
+   "description": "Proposal network field.",
+   "defines": [
+    "HashMLPDensityField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/fruit_field.py",
+   "size": "17.2 KB",
+   "modified": "2026-02-17",
+   "description": "Field for compound nerf model, adds scene contraction and image embeddings to instant ngp",
+   "defines": [
+    "FruitField",
+    "SemanticNeRFField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/generfacto_field.py",
+   "size": "5.7 KB",
+   "modified": "2026-02-17",
+   "description": "Field for Generfacto model",
+   "defines": [
+    "GenerfactoField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/nerfacto_field.py",
+   "size": "13.2 KB",
+   "modified": "2026-02-17",
+   "description": "Field for compound nerf model, adds scene contraction and image embeddings to instant ngp",
+   "defines": [
+    "NerfactoField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/nerfw_field.py",
+   "size": "6.9 KB",
+   "modified": "2026-02-17",
+   "description": "Fields for nerf-w",
+   "defines": [
+    "VanillaNerfWField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/sdf_field.py",
+   "size": "17.8 KB",
+   "modified": "2026-02-17",
+   "description": "Field for SDF based model, rather then estimating density to generate a surface, a signed distance function (SDF) for surface representation is used to help with extracting high fidelity surfaces",
+   "defines": [
+    "LearnedVariance",
+    "SDFFieldConfig",
+    "SDFField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/semantic_is_enough_field.py",
+   "size": "4.8 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "SemanticIEField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/semantic_nerf_field.py",
+   "size": "4.2 KB",
+   "modified": "2026-02-17",
+   "description": "Semantic NeRF field implementation.",
+   "defines": [
+    "SemanticNerfField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/tensorf_field.py",
+   "size": "5.7 KB",
+   "modified": "2026-02-17",
+   "description": "TensoRF Field",
+   "defines": [
+    "TensoRFField"
+   ]
+  },
+  {
+   "path": "nerfstudio/fields/vanilla_nerf_field.py",
+   "size": "4.7 KB",
+   "modified": "2026-02-17",
+   "description": "Classic NeRF field",
+   "defines": [
+    "NeRFField"
+   ]
+  },
+  {
+   "path": "nerfstudio/generative/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/generative/deepfloyd.py",
+   "size": "8.8 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "DeepFloyd",
+    "generate_image"
+   ],
+   "runnable": true,
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/generative/positional_text_embeddings.py",
+   "size": "5.3 KB",
+   "modified": "2026-02-17",
+   "description": "Utility helper functions for generative 3D models",
+   "defines": [
+    "PositionalTextEmbeddings"
+   ]
+  },
+  {
+   "path": "nerfstudio/generative/stable_diffusion.py",
+   "size": "11.7 KB",
+   "modified": "2026-02-17",
+   "description": "Stable Diffusion helpers",
+   "defines": [
+    "StableDiffusion",
+    "generate_image"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/model_components/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/model_components/lib_bilagrid.py",
+   "size": "21.3 KB",
+   "modified": "2026-02-17",
+   "description": "This is a standalone PyTorch implementation of 3D bilateral grid and CP-decomposed 4D bilateral grid. To use this module, you can download the \"lib_bilagrid.py\" file and simply put it in your project directory.",
+   "defines": [
+    "color_correct",
+    "bilateral_grid_tv_loss",
+    "color_affine_transform",
+    "total_variation_loss",
+    "slice",
+    "BilateralGrid",
+    "slice4d",
+    "BilateralGridCP4D"
+   ]
+  },
+  {
+   "path": "nerfstudio/model_components/losses.py",
+   "size": "21.8 KB",
+   "modified": "2026-02-17",
+   "description": "Collection of Losses.",
+   "defines": [
+    "DepthLossType",
+    "outer",
+    "lossfun_outer",
+    "ray_samples_to_sdist",
+    "interlevel_loss",
+    "lossfun_distortion",
+    "distortion_loss",
+    "nerfstudio_distortion_loss",
+    "orientation_loss",
+    "pred_normal_loss",
+    "ds_nerf_depth_loss",
+    "urban_radiance_field_depth_loss",
+    "depth_loss",
+    "monosdf_normal_loss",
+    "MiDaSMSELoss",
+    "GradientLoss",
+    "ScaleAndShiftInvariantLoss",
+    "tv_loss",
+    "scale_gradients_by_distance_squared",
+    "depth_ranking_loss"
+   ]
+  },
+  {
+   "path": "nerfstudio/model_components/orthographic_ray_generators.py",
+   "size": "2.5 KB",
+   "modified": "2026-02-17",
+   "description": "Ray generator.",
+   "defines": [
+    "OrthographicRayGenerator"
+   ]
+  },
+  {
+   "path": "nerfstudio/model_components/ray_generators.py",
+   "size": "1.8 KB",
+   "modified": "2026-02-17",
+   "description": "Ray generator.",
+   "defines": [
+    "RayGenerator"
+   ]
+  },
+  {
+   "path": "nerfstudio/model_components/ray_samplers.py",
+   "size": "28.6 KB",
+   "modified": "2026-02-17",
+   "description": "Collection of sampling strategies",
+   "defines": [
+    "Sampler",
+    "SpacedSampler",
+    "UniformSampler",
+    "LinearDisparitySampler",
+    "SqrtSampler",
+    "LogSampler",
+    "UniformLinDispPiecewiseSampler",
+    "PDFSampler",
+    "DensityFn",
+    "VolumetricSampler",
+    "ProposalNetworkSampler",
+    "NeuSSampler"
+   ]
+  },
+  {
+   "path": "nerfstudio/model_components/renderers.py",
+   "size": "16.8 KB",
+   "modified": "2026-02-17",
+   "description": "Collection of renderers",
+   "defines": [
+    "background_color_override_context",
+    "RGBRenderer",
+    "SHRenderer",
+    "AccumulationRenderer",
+    "TMid",
+    "DepthRenderer",
+    "UncertaintyRenderer",
+    "SemanticRenderer",
+    "NormalsRenderer"
+   ]
+  },
+  {
+   "path": "nerfstudio/model_components/scene_colliders.py",
+   "size": "6.9 KB",
+   "modified": "2026-02-17",
+   "description": "Scene Colliders",
+   "defines": [
+    "SceneCollider",
+    "AABBBoxCollider",
+    "SphereCollider",
+    "NearFarCollider"
+   ]
+  },
+  {
+   "path": "nerfstudio/model_components/shaders.py",
+   "size": "2.5 KB",
+   "modified": "2026-02-17",
+   "description": "Shaders for rendering.",
+   "defines": [
+    "LambertianShader",
+    "NormalsShader"
+   ]
+  },
+  {
+   "path": "nerfstudio/model_components/uniform_sampler_with_noise.py",
+   "size": "3.8 KB",
+   "modified": "2026-02-17",
+   "description": "Collection of sampling strategies",
+   "defines": [
+    "UniformSamplerWithNoise"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/models/base_model.py",
+   "size": "10.0 KB",
+   "modified": "2026-02-17",
+   "description": "Base Model implementation which takes in RayBundles or Cameras",
+   "defines": [
+    "ModelConfig",
+    "Model"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/base_surface_model.py",
+   "size": "16.7 KB",
+   "modified": "2026-02-17",
+   "description": "Implementation of Base surface model.",
+   "defines": [
+    "SurfaceModelConfig",
+    "SurfaceModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/depth_nerfacto.py",
+   "size": "6.9 KB",
+   "modified": "2026-02-17",
+   "description": "Nerfacto augmented with depth supervision.",
+   "defines": [
+    "DepthNerfactoModelConfig",
+    "DepthNerfactoModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/fruit_nerf.py",
+   "size": "19.3 KB",
+   "modified": "2026-02-17",
+   "description": "FruitNeRF implementation .",
+   "defines": [
+    "FruitNerfModelConfig",
+    "FruitModel",
+    "FruitModelMLP"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/generfacto.py",
+   "size": "21.6 KB",
+   "modified": "2026-02-17",
+   "description": "Nerfstudio's Text to 3D model.",
+   "defines": [
+    "GenerfactoModelConfig",
+    "GenerfactoModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/instant_ngp.py",
+   "size": "10.4 KB",
+   "modified": "2026-02-17",
+   "description": "Implementation of Instant NGP.",
+   "defines": [
+    "InstantNGPModelConfig",
+    "NGPModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/mipnerf.py",
+   "size": "9.0 KB",
+   "modified": "2026-02-17",
+   "description": "Implementation of mip-NeRF.",
+   "defines": [
+    "MipNerfModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/nerfacto.py",
+   "size": "19.4 KB",
+   "modified": "2026-02-17",
+   "description": "NeRF implementation that combines many recent advancements.",
+   "defines": [
+    "stats",
+    "NerfactoModelConfig",
+    "NerfactoModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/neus.py",
+   "size": "4.0 KB",
+   "modified": "2026-02-17",
+   "description": "Implementation of NeuS.",
+   "defines": [
+    "NeuSModelConfig",
+    "NeuSModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/neus_facto.py",
+   "size": "9.3 KB",
+   "modified": "2026-02-17",
+   "description": "Implementation of NeuS similar to nerfacto where proposal sampler is used. Based on SDFStudio https://github.com/autonomousvision/sdfstudio/",
+   "defines": [
+    "NeuSFactoModelConfig",
+    "NeuSFactoModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/semantic_is_enough_nerf.py",
+   "size": "11.1 KB",
+   "modified": "2026-02-17",
+   "description": "Semantic NeRF-W implementation which should be fast enough to view in the viewer.",
+   "defines": [
+    "SemanticIEModelConfig",
+    "SemanticIEModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/semantic_nerfw.py",
+   "size": "13.5 KB",
+   "modified": "2026-02-17",
+   "description": "Semantic NeRF-W implementation which should be fast enough to view in the viewer.",
+   "defines": [
+    "SemanticNerfWModelConfig",
+    "SemanticNerfWModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/splatfacto.py",
+   "size": "31.7 KB",
+   "modified": "2026-02-17",
+   "description": "Gaussian Splatting implementation that combines many recent advancements.",
+   "defines": [
+    "resize_image",
+    "get_viewmat",
+    "SplatfactoModelConfig",
+    "SplatfactoModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/tensorf.py",
+   "size": "15.4 KB",
+   "modified": "2026-02-17",
+   "description": "TensorRF implementation.",
+   "defines": [
+    "TensoRFModelConfig",
+    "TensoRFModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/models/vanilla_nerf.py",
+   "size": "11.1 KB",
+   "modified": "2026-02-17",
+   "description": "Implementation of vanilla nerf.",
+   "defines": [
+    "VanillaModelConfig",
+    "NeRFModel"
+   ]
+  },
+  {
+   "path": "nerfstudio/pipelines/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/pipelines/base_pipeline.py",
+   "size": "18.5 KB",
+   "modified": "2026-02-17",
+   "description": "Abstracts for the Pipeline class.",
+   "defines": [
+    "module_wrapper",
+    "Pipeline",
+    "VanillaPipelineConfig",
+    "VanillaPipeline"
+   ]
+  },
+  {
+   "path": "nerfstudio/pipelines/dynamic_batch.py",
+   "size": "4.5 KB",
+   "modified": "2026-02-17",
+   "description": "A pipeline that dynamically chooses the number of rays to sample.",
+   "defines": [
+    "DynamicBatchPipelineConfig",
+    "DynamicBatchPipeline"
+   ]
+  },
+  {
+   "path": "nerfstudio/pipelines/fruit_pipeline.py",
+   "size": "12.3 KB",
+   "modified": "2026-02-17",
+   "description": "Abstracts for the Pipeline class.",
+   "defines": [
+    "FruitPipelineConfig",
+    "FruitPipeline"
+   ]
+  },
+  {
+   "path": "nerfstudio/plugins/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/plugins/registry.py",
+   "size": "3.2 KB",
+   "modified": "2026-02-17",
+   "description": "Module that keeps all registered plugins and allows for plugin discovery.",
+   "defines": [
+    "discover_methods"
+   ]
+  },
+  {
+   "path": "nerfstudio/plugins/registry_dataparser.py",
+   "size": "3.7 KB",
+   "modified": "2026-02-17",
+   "description": "Module that keeps all registered plugins and allows for plugin discovery.",
+   "defines": [
+    "DataParserSpecification",
+    "discover_dataparsers"
+   ]
+  },
+  {
+   "path": "nerfstudio/plugins/types.py",
+   "size": "1.1 KB",
+   "modified": "2026-02-17",
+   "description": "This package contains specifications used to register plugins.",
+   "defines": [
+    "MethodSpecification"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/process_data/base_converter_to_nerfstudio_dataset.py",
+   "size": "1.8 KB",
+   "modified": "2026-02-17",
+   "description": "Base class to process images or video into a nerfstudio dataset",
+   "defines": [
+    "BaseConverterToNerfstudioDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/colmap_converter_to_nerfstudio_dataset.py",
+   "size": "10.6 KB",
+   "modified": "2026-02-17",
+   "description": "Base class to processes a video or image sequence to a nerfstudio compatible dataset.",
+   "defines": [
+    "ColmapConverterToNerfstudioDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/colmap_utils.py",
+   "size": "27.8 KB",
+   "modified": "2026-02-17",
+   "description": "Tools supporting the execution of COLMAP and preparation of COLMAP-based datasets for nerfstudio training.",
+   "defines": [
+    "get_colmap_version",
+    "get_vocab_tree",
+    "run_colmap",
+    "parse_colmap_camera_params",
+    "colmap_to_json",
+    "create_sfm_depth",
+    "get_matching_summary",
+    "create_ply_from_colmap"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/equirect_utils.py",
+   "size": "12.5 KB",
+   "modified": "2026-02-17",
+   "description": "Helper utils for processing equirectangular data.",
+   "defines": [
+    "euler_rodriguez_rotation_matrix",
+    "remap_cubic",
+    "equirect2persp",
+    "generate_planar_projections_from_equirectangular",
+    "compute_resolution_from_equirect"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/hloc_utils.py",
+   "size": "5.7 KB",
+   "modified": "2026-02-17",
+   "description": "Code that uses the hierarchical localization toolbox (hloc) to extract and match image features, estimate camera poses, and do sparse reconstruction. Requires hloc module from : https://github.com/cvg/Hierarchical-Localization",
+   "defines": [
+    "run_hloc"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/images_to_nerfstudio_dataset.py",
+   "size": "5.8 KB",
+   "modified": "2026-02-17",
+   "description": "Processes an image sequence to a nerfstudio compatible dataset.",
+   "defines": [
+    "ImagesToNerfstudioDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/metashape_utils.py",
+   "size": "8.9 KB",
+   "modified": "2026-02-17",
+   "description": "Helper utils for processing metashape data into the nerfstudio format.",
+   "defines": [
+    "metashape_to_json"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/odm_utils.py",
+   "size": "6.8 KB",
+   "modified": "2026-02-17",
+   "description": "Helper utils for processing ODM data into the nerfstudio format.",
+   "defines": [
+    "rodrigues_vec_to_rotation_mat",
+    "get_reconstruction",
+    "reconstruction_to_ply",
+    "cameras2nerfds"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/polycam_utils.py",
+   "size": "10.5 KB",
+   "modified": "2026-02-17",
+   "description": "Helper utils for processing polycam data into the nerfstudio format.",
+   "defines": [
+    "polycam_to_json",
+    "process_images",
+    "process_depth_maps"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/process_data_utils.py",
+   "size": "25.7 KB",
+   "modified": "2026-02-17",
+   "description": "Helper utils for processing data into the nerfstudio format.",
+   "defines": [
+    "CameraModel",
+    "list_images",
+    "get_image_filenames",
+    "get_num_frames_in_video",
+    "convert_video_to_images",
+    "copy_images_list",
+    "copy_and_upscale_polycam_depth_maps_list",
+    "copy_images",
+    "downscale_images",
+    "find_tool_feature_matcher_combination",
+    "generate_circle_mask",
+    "generate_crop_mask",
+    "generate_mask",
+    "save_mask"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/realitycapture_utils.py",
+   "size": "5.1 KB",
+   "modified": "2026-02-17",
+   "description": "Helper utils for processing reality capture data into the nerfstudio format.",
+   "defines": [
+    "realitycapture_to_json"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/record3d_utils.py",
+   "size": "4.0 KB",
+   "modified": "2026-02-17",
+   "description": "Helper functions for processing record3d data.",
+   "defines": [
+    "record3d_to_json"
+   ]
+  },
+  {
+   "path": "nerfstudio/process_data/video_to_nerfstudio_dataset.py",
+   "size": "6.3 KB",
+   "modified": "2026-02-17",
+   "description": "Processes a video to a nerfstudio compatible dataset.",
+   "defines": [
+    "VideoToNerfstudioDataset"
+   ]
+  },
+  {
+   "path": "nerfstudio/scripts/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/eval.py",
+   "size": "2.5 KB",
+   "modified": "2026-02-17",
+   "description": "eval.py",
+   "defines": [
+    "ComputePSNR",
+    "entrypoint"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/exporter.py",
+   "size": "39.9 KB",
+   "modified": "2026-02-17",
+   "description": "Script for exporting NeRF into other formats.",
+   "defines": [
+    "Exporter",
+    "validate_pipeline",
+    "ExportRadianceField",
+    "ExportVoxelsWithinOBB",
+    "ExportEverythingFruitProposal",
+    "ExportSemanticRadianceField",
+    "ExportPointCloud",
+    "ExportTSDFMesh",
+    "ExportPoissonMesh",
+    "ExportMarchingCubesMesh",
+    "ExportCameraPoses",
+    "ExportGaussianSplat",
+    "entrypoint",
+    "get_parser_fn"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/fruit_exporter.py",
+   "size": "4.4 KB",
+   "modified": "2026-02-17",
+   "description": "Script for exporting NeRF into other formats.",
+   "defines": [
+    "Exporter",
+    "ExportSemanticPointCloud",
+    "entrypoint",
+    "get_parser_fn"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/fruit_process_data.py",
+   "size": "1.4 KB",
+   "modified": "2026-02-17",
+   "description": "Processes a video or image sequence to a nerfstudio compatible dataset.",
+   "defines": [
+    "entrypoint",
+    "get_parser_fn"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/process_data.py",
+   "size": "22.6 KB",
+   "modified": "2026-02-17",
+   "description": "Processes a video or image sequence to a nerfstudio compatible dataset.",
+   "defines": [
+    "ProcessRecord3D",
+    "ProcessPolycam",
+    "ProcessMetashape",
+    "ProcessRealityCapture",
+    "ProcessODM",
+    "NotInstalled",
+    "entrypoint",
+    "get_parser_fn"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/render.py",
+   "size": "41.8 KB",
+   "modified": "2026-02-17",
+   "description": "render.py",
+   "defines": [
+    "insert_spherical_metadata_into_file",
+    "CropData",
+    "get_crop_from_json",
+    "BaseRender",
+    "RenderCameraPath",
+    "RenderInterpolated",
+    "SpiralRender",
+    "DatasetRender",
+    "entrypoint",
+    "get_parser_fn"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/texture.py",
+   "size": "2.8 KB",
+   "modified": "2026-02-17",
+   "description": "Script to texture an existing mesh file.",
+   "defines": [
+    "TextureMesh",
+    "entrypoint"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/train.py",
+   "size": "10.1 KB",
+   "modified": "2026-02-17",
+   "description": "Train a radiance field with nerfstudio. For real captures, we recommend using the [bright_yellow]nerfacto[/bright_yellow] model.",
+   "defines": [
+    "train_loop",
+    "launch",
+    "main",
+    "entrypoint"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/blender/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/blender/nerfstudio_blender.py",
+   "size": "16.8 KB",
+   "modified": "2026-02-17",
+   "description": "nerfstudio_blender.py",
+   "defines": [
+    "CreateJSONCameraPath",
+    "ReadJSONinputCameraPath",
+    "NerfstudioMainPanel",
+    "NerfstudioBgPanel",
+    "NerfstudioInputPanel",
+    "register",
+    "unregister"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/completions/setup.bash",
+   "size": "442 B",
+   "modified": "2026-02-17",
+   "description": "nerfstudio completions for bash. This should generally be installed automatically by `configure.py`."
+  },
+  {
+   "path": "nerfstudio/scripts/completions/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/completions/install.py",
+   "size": "15.2 KB",
+   "modified": "2026-02-17",
+   "description": "Configuration script for setting up tab completion for nerfstudio in bash and zsh.",
+   "defines": [
+    "main",
+    "entrypoint"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/datasets/process_nuscenes_masks.py",
+   "size": "6.4 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "ProcessNuScenesMasks",
+    "entrypoint"
+   ],
+   "runnable": true,
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/datasets/process_project_aria.py",
+   "size": "10.3 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "AriaCameraCalibration",
+    "AriaImageFrame",
+    "TimedPoses",
+    "get_camera_calibs",
+    "read_trajectory_csv_to_dict",
+    "to_aria_image_frame",
+    "to_nerfstudio_frame",
+    "ProcessProjectAria"
+   ],
+   "runnable": true,
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/docs/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/docs/add_nb_tags.py",
+   "size": "3.3 KB",
+   "modified": "2026-02-17",
+   "description": "Helper that add tags to notebooks based on cell comments.",
+   "defines": [
+    "main"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/docs/build_docs.py",
+   "size": "1.9 KB",
+   "modified": "2026-02-17",
+   "description": "Simple yaml debugger",
+   "defines": [
+    "run_command",
+    "main"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/downloads/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/downloads/download_data.py",
+   "size": "25.0 KB",
+   "modified": "2026-02-17",
+   "description": "Download datasets and specific captures from the datasets.",
+   "defines": [
+    "BlenderDownload",
+    "Sitcoms3DDownload",
+    "grab_file_id",
+    "download_capture_name",
+    "NerfstudioDownload",
+    "Record3dDownload",
+    "DNerfDownload",
+    "PhototourismDownload",
+    "SDFstudioDemoDownload",
+    "NeRFOSRDownload",
+    "Mill19Download",
+    "NotInstalled",
+    "main",
+    "entrypoint"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/downloads/eyeful_tower.py",
+   "size": "18.4 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "EyefulTowerResolutionMetadata",
+    "EyefulTowerDownload"
+   ],
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/downloads/utils.py",
+   "size": "1.1 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "DatasetDownload"
+   ],
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/github/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/github/run_actions.py",
+   "size": "4.3 KB",
+   "modified": "2026-02-17",
+   "description": "Simple yaml debugger",
+   "defines": [
+    "run_command",
+    "run_github_actions_file",
+    "run_code_checks",
+    "entrypoint"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/maya/nerfplugin_maya.py",
+   "size": "17.4 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "CreateJSONCameraPath",
+    "ReadJSONinputCameraPath",
+    "maya_useNewAPI",
+    "pluginCommand",
+    "initializePlugin",
+    "uninitializePlugin",
+    "addNewShelf",
+    "Window"
+   ],
+   "description": "type: ignore Copyright 2024 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at ht…"
+  },
+  {
+   "path": "nerfstudio/scripts/viewer/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/scripts/viewer/run_viewer.py",
+   "size": "4.8 KB",
+   "modified": "2026-02-17",
+   "description": "Starts viewer in eval mode.",
+   "defines": [
+    "ViewerConfigWithoutNumRays",
+    "RunViewer",
+    "entrypoint"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/scripts/viewer/sync_viser_message_defs.py",
+   "size": "2.3 KB",
+   "modified": "2026-02-17",
+   "description": "Generate viser message definitions for TypeScript, by parsing Python dataclasses.",
+   "defines": [
+    "main",
+    "entrypoint"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/utils/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/utils/available_devices.py",
+   "size": "1.2 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "get_available_devices"
+   ],
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/utils/colormaps.py",
+   "size": "7.5 KB",
+   "modified": "2026-02-17",
+   "description": "Helper functions for visualizing outputs",
+   "defines": [
+    "ColormapOptions",
+    "apply_colormap",
+    "apply_float_colormap",
+    "apply_depth_colormap",
+    "apply_boolean_colormap",
+    "apply_pca_colormap"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/colors.py",
+   "size": "1.7 KB",
+   "modified": "2026-02-17",
+   "description": "Common Colors",
+   "defines": [
+    "get_color"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/comms.py",
+   "size": "2.4 KB",
+   "modified": "2026-02-17",
+   "description": "functionality to handle multiprocessing syncing and communicating",
+   "defines": [
+    "is_dist_avail_and_initialized",
+    "get_world_size",
+    "get_rank",
+    "get_local_rank",
+    "get_local_size",
+    "is_main_process",
+    "synchronize"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/decorators.py",
+   "size": "2.6 KB",
+   "modified": "2026-02-17",
+   "description": "Decorator definitions",
+   "defines": [
+    "decorate_all",
+    "check_profiler_enabled",
+    "check_viewer_enabled",
+    "check_eval_enabled",
+    "check_main_thread"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/eval_utils.py",
+   "size": "4.5 KB",
+   "modified": "2026-02-17",
+   "description": "Evaluation utils",
+   "defines": [
+    "eval_load_checkpoint",
+    "eval_setup"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/external.py",
+   "size": "1.9 KB",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/utils/install_checks.py",
+   "size": "1.7 KB",
+   "modified": "2026-02-17",
+   "description": "Helpers for checking if programs are installed",
+   "defines": [
+    "check_ffmpeg_installed",
+    "check_colmap_installed",
+    "check_curl_installed"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/io.py",
+   "size": "1.3 KB",
+   "modified": "2026-02-17",
+   "description": "Input/output utils.",
+   "defines": [
+    "load_from_json",
+    "write_to_json"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/math.py",
+   "size": "17.3 KB",
+   "modified": "2026-02-17",
+   "description": "Math Helper Functions",
+   "defines": [
+    "Gaussians",
+    "compute_3d_gaussian",
+    "cylinder_to_gaussian",
+    "conical_frustum_to_gaussian",
+    "expected_sin",
+    "intersect_aabb",
+    "intersect_obb",
+    "safe_normalize",
+    "masked_reduction",
+    "normalized_depth_scale_and_shift",
+    "columnwise_squared_l2_distance",
+    "generate_polyhedron_basis",
+    "random_quat_tensor",
+    "k_nearest_sklearn"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/misc.py",
+   "size": "7.3 KB",
+   "modified": "2026-02-17",
+   "description": "Miscellaneous helper code.",
+   "defines": [
+    "get_dict_to_torch",
+    "get_dict_to_cpu",
+    "get_masked_dict",
+    "IterableWrapper",
+    "scale_dict",
+    "step_check",
+    "update_avg",
+    "strtobool",
+    "torch_compile",
+    "get_orig_class"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/plotly_utils.py",
+   "size": "16.5 KB",
+   "modified": "2026-02-17",
+   "description": "Visualization code for plotly. The function use prefix conventions in the following way: - 'get_*' functions (e.g., 'get_camera_frustums') return data that can be plotted with plotly - 'vis_*' functions (e.g., 'vis_camera_rays') return 'go.Figure' objects which are the plots. Go Figure! :')",
+   "defines": [
+    "color_str",
+    "get_line_segments_from_lines",
+    "vis_dataset",
+    "get_random_color",
+    "get_sphere",
+    "get_cube",
+    "get_gaussian_ellipsiod",
+    "get_gaussian_ellipsoids_list",
+    "get_frustum_mesh",
+    "get_frustums_mesh_list",
+    "get_frustum_points",
+    "get_ray_bundle_lines",
+    "vis_camera_rays",
+    "get_camera_frustums"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/poses.py",
+   "size": "2.7 KB",
+   "modified": "2026-02-17",
+   "description": "Common 3D pose methods",
+   "defines": [
+    "to4x4",
+    "inverse",
+    "multiply",
+    "normalize"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/printing.py",
+   "size": "1.6 KB",
+   "modified": "2026-02-17",
+   "description": "A collection of common strings and print statements used throughout the codebase.",
+   "defines": [
+    "print_tcnn_speed_warning",
+    "human_format"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/profiler.py",
+   "size": "7.8 KB",
+   "modified": "2026-02-17",
+   "description": "Profiler base class and functionality",
+   "defines": [
+    "time_function",
+    "time_function",
+    "time_function",
+    "flush_profiler",
+    "setup_profiler",
+    "PytorchProfiler",
+    "Profiler"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/rich_utils.py",
+   "size": "2.3 KB",
+   "modified": "2026-02-17",
+   "description": "Additional rich ui components",
+   "defines": [
+    "ItersPerSecColumn",
+    "status",
+    "get_progress"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/scripts.py",
+   "size": "1.5 KB",
+   "modified": "2026-02-17",
+   "description": "Helpers for running script commands.",
+   "defines": [
+    "run_command"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/spherical_harmonics.py",
+   "size": "3.9 KB",
+   "modified": "2026-02-17",
+   "description": "Sphecal Harmonics utils.",
+   "defines": [
+    "components_from_spherical_harmonics",
+    "num_sh_bases",
+    "RGB2SH",
+    "SH2RGB"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/tensor_dataclass.py",
+   "size": "13.3 KB",
+   "modified": "2026-02-17",
+   "description": "Tensor dataclass",
+   "defines": [
+    "TensorDataclass"
+   ]
+  },
+  {
+   "path": "nerfstudio/utils/writer.py",
+   "size": "18.6 KB",
+   "modified": "2026-02-17",
+   "description": "Generic Writer class",
+   "defines": [
+    "to8b",
+    "EventName",
+    "EventType",
+    "put_image",
+    "put_scalar",
+    "put_dict",
+    "put_config",
+    "put_time",
+    "write_out_storage",
+    "setup_local_writer",
+    "is_initialized",
+    "setup_event_writer",
+    "Writer",
+    "TimeWriter",
+    "WandbWriter",
+    "TensorboardWriter",
+    "CometWriter",
+    "LocalWriter"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/viewer/control_panel.py",
+   "size": "16.5 KB",
+   "modified": "2026-02-17",
+   "description": "Control panel for the viewer",
+   "defines": [
+    "ControlPanel"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer/export_panel.py",
+   "size": "8.4 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "populate_export_tab",
+    "show_command_modal",
+    "get_crop_string",
+    "populate_point_cloud_tab",
+    "populate_mesh_tab",
+    "populate_splat_tab"
+   ],
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/viewer/render_panel.py",
+   "size": "46.2 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "Keyframe",
+    "CameraPath",
+    "RenderTabState",
+    "populate_render_tab"
+   ],
+   "runnable": true,
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/viewer/render_state_machine.py",
+   "size": "16.0 KB",
+   "modified": "2026-02-17",
+   "description": "This file contains the render state machine, which is responsible for deciding when to render the image",
+   "defines": [
+    "RenderAction",
+    "RenderStateMachine"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer/utils.py",
+   "size": "5.5 KB",
+   "modified": "2026-02-17",
+   "defines": [
+    "CameraState",
+    "get_camera",
+    "update_render_aabb",
+    "parse_object"
+   ],
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/viewer/viewer.py",
+   "size": "24.5 KB",
+   "modified": "2026-02-17",
+   "description": "Manage the state of the viewer",
+   "defines": [
+    "Viewer"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer/viewer_elements.py",
+   "size": "24.1 KB",
+   "modified": "2026-02-17",
+   "description": "Viewer GUI elements for the nerfstudio viewer",
+   "defines": [
+    "ViewerClick",
+    "ViewerRectSelect",
+    "ViewerControl",
+    "ViewerElement",
+    "ViewerButton",
+    "ViewerParameter",
+    "ViewerSlider",
+    "ViewerText",
+    "ViewerNumber",
+    "ViewerCheckbox",
+    "ViewerDropdown",
+    "ViewerButtonGroup",
+    "ViewerRGB",
+    "ViewerVec3"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer/server/__init__.py",
+   "size": "664 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/viewer/server/viewer_elements.py",
+   "size": "844 B",
+   "modified": "2026-02-17",
+   "description": "Shim for viewer_elements.py, which has been moved."
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/app/package.json",
+   "size": "2.5 KB",
+   "modified": "2026-02-17",
+   "top_keys": [
+    "name",
+    "homepage",
+    "version",
+    "private",
+    "dependencies",
+    "scripts",
+    "eslintConfig",
+    "browserslist",
+    "main",
+    "author",
+    "license",
+    "description",
+    "devDependencies",
+    "resolutions"
+   ],
+   "description": "viewer"
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/app/tsconfig.json",
+   "size": "503 B",
+   "modified": "2026-02-17",
+   "top_keys": [
+    "compilerOptions",
+    "include"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/app/run_deploy.py",
+   "size": "4.6 KB",
+   "modified": "2026-02-17",
+   "description": "Code for deploying the built viewer folder to a server and handing versioning. We use the library sshconf (https://github.com/sorend/sshconf) for working with the ssh config file.",
+   "defines": [
+    "run_cmd",
+    "main"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/app/public/manifest.json",
+   "size": "185 B",
+   "modified": "2026-02-17",
+   "top_keys": [
+    "short_name",
+    "name",
+    "start_url",
+    "display",
+    "theme_color",
+    "background_color"
+   ],
+   "description": "Interactive NeRF viewer"
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/app/src/themes/leva_theme.json",
+   "size": "1.1 KB",
+   "modified": "2026-02-17",
+   "top_keys": [
+    "colors",
+    "radii",
+    "space",
+    "fontSizes",
+    "sizes",
+    "borderWidths",
+    "fontWeights"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/__init__.py",
+   "size": "663 B",
+   "modified": "2026-02-17",
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/control_panel.py",
+   "size": "14.4 KB",
+   "modified": "2026-02-17",
+   "description": "Control panel for the viewer",
+   "defines": [
+    "ControlPanel"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/gui_utils.py",
+   "size": "2.5 KB",
+   "modified": "2026-02-17",
+   "description": "Utilities for generating custom gui elements in the viewer",
+   "defines": [
+    "parse_object"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/path.py",
+   "size": "1.6 KB",
+   "modified": "2026-02-17",
+   "description": "Path class",
+   "defines": [
+    "Path"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/render_state_machine.py",
+   "size": "12.9 KB",
+   "modified": "2026-02-17",
+   "description": "This file contains the render state machine, which is responsible for deciding when to render the image",
+   "defines": [
+    "RenderAction",
+    "RenderStateMachine"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/utils.py",
+   "size": "3.8 KB",
+   "modified": "2026-02-17",
+   "description": "Generic utility functions",
+   "defines": [
+    "get_chunks",
+    "three_js_perspective_camera_focal_length",
+    "get_intrinsics_matrix_and_camera_to_world_h"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/viewer_elements.py",
+   "size": "18.4 KB",
+   "modified": "2026-02-17",
+   "description": "Viewer GUI elements for the nerfstudio viewer",
+   "defines": [
+    "ViewerClick",
+    "ViewerControl",
+    "ViewerElement",
+    "ViewerButton",
+    "ViewerParameter",
+    "ViewerSlider",
+    "ViewerText",
+    "ViewerNumber",
+    "ViewerCheckbox",
+    "ViewerDropdown",
+    "ViewerButtonGroup",
+    "ViewerRGB",
+    "ViewerVec3"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/viewer_state.py",
+   "size": "19.6 KB",
+   "modified": "2026-02-17",
+   "description": "Manage the state of the viewer",
+   "defines": [
+    "ViewerLegacyState"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/viewer_utils.py",
+   "size": "3.6 KB",
+   "modified": "2026-02-17",
+   "description": "Code to interface with the `vis/` (the JS viewer).",
+   "defines": [
+    "get_viewer_version",
+    "get_viewer_url",
+    "IOChangeException",
+    "SetTrace",
+    "is_port_open",
+    "get_free_port",
+    "update_render_aabb"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/state/node.py",
+   "size": "1.7 KB",
+   "modified": "2026-02-17",
+   "description": "For tree logic code.",
+   "defines": [
+    "Node",
+    "get_tree",
+    "find_node",
+    "set_node_value",
+    "walk"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/state/state_node.py",
+   "size": "963 B",
+   "modified": "2026-02-17",
+   "defines": [
+    "StateNode"
+   ],
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/viser/__init__.py",
+   "size": "911 B",
+   "modified": "2026-02-17",
+   "description": "Viser is used for the nerfstudio viewer backend"
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/viser/gui.py",
+   "size": "6.2 KB",
+   "modified": "2026-02-17",
+   "description": "Manages GUI communication.",
+   "defines": [
+    "GuiHandle",
+    "GuiSelectHandle"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/viser/message_api.py",
+   "size": "21.4 KB",
+   "modified": "2026-02-17",
+   "description": "This module contains the MessageApi class, which is the interface for sending messages to the Viewer",
+   "defines": [
+    "MessageApi"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/viser/messages.py",
+   "size": "7.2 KB",
+   "modified": "2026-02-17",
+   "description": "Message type definitions. For synchronization with the TypeScript definitions, see `_typescript_interface_gen.py.`",
+   "defines": [
+    "NerfstudioMessage",
+    "BackgroundImageMessage",
+    "GuiAddMessage",
+    "GuiRemoveMessage",
+    "GuiUpdateMessage",
+    "GuiSetHiddenMessage",
+    "GuiSetValueMessage",
+    "GuiSetLevaConfMessage",
+    "FilePathInfoMessage",
+    "SetCameraMessage",
+    "CameraMessage",
+    "SceneBoxMessage",
+    "DatasetImageMessage",
+    "TrainingStateMessage",
+    "CameraPathPayloadMessage",
+    "CameraPathOptionsRequest",
+    "CameraPathsMessage",
+    "CropParamsMessage",
+    "StatusMessage",
+    "SaveCheckpointMessage",
+    "…"
+   ]
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/viser/server.py",
+   "size": "2.3 KB",
+   "modified": "2026-02-17",
+   "description": "Core Viser Server",
+   "defines": [
+    "ViserServer"
+   ]
+  },
+  {
+   "path": "outputs/unnamed/roi_calculation/2025-08-05_020836/dataparser_transforms.json",
+   "size": "309 B",
+   "modified": "2025-08-04",
+   "top_keys": [
+    "transform",
+    "scale"
+   ]
+  },
+  {
+   "path": "tests/test_nerfacto_integration.py",
+   "size": "3.0 KB",
+   "modified": "2025-07-31",
+   "defines": [
+    "run_command_with_console_output",
+    "run_ns_download_data",
+    "run_ns_train_nerfacto",
+    "run_ns_eval",
+    "main"
+   ],
+   "runnable": true,
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "tests/test_splatfacto_integration.py",
+   "size": "2.0 KB",
+   "modified": "2025-07-31",
+   "defines": [
+    "run_ns_train_splatfacto",
+    "run_ns_eval",
+    "main"
+   ],
+   "runnable": true,
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "tests/test_train.py",
+   "size": "3.1 KB",
+   "modified": "2025-08-15",
+   "description": "Default test to make sure train runs",
+   "defines": [
+    "set_reduced_config",
+    "test_train",
+    "test_simple_io"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/cameras/test_cameras.py",
+   "size": "12.9 KB",
+   "modified": "2025-07-31",
+   "description": "Test the camera classes.",
+   "defines": [
+    "test_pinhole_camera",
+    "test_orthophoto_camera",
+    "test_multi_camera_type",
+    "test_equirectangular_camera",
+    "test_camera_as_tensordataclass",
+    "check_generate_rays_shape"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/cameras/test_rays.py",
+   "size": "1.9 KB",
+   "modified": "2025-07-31",
+   "description": "Test the ray classes.",
+   "defines": [
+    "test_frustum_get_position",
+    "test_frustum_get_gaussian_blob",
+    "test_frustum_apply_masks",
+    "test_get_mock_frustum"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/data/test_datamanager.py",
+   "size": "4.7 KB",
+   "modified": "2025-07-31",
+   "defines": [
+    "DummyDataParser",
+    "config",
+    "test_data_manager_type_inference",
+    "test_data_manager_type_can_be_pickled",
+    "test_data_manager_type_can_be_serialized",
+    "test_deserialize_config1",
+    "test_deserialize_config2"
+   ]
+  },
+  {
+   "path": "tests/data/configs/test_config1.yml",
+   "size": "6.4 KB",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "_target",
+    "data",
+    "experiment_name",
+    "load_checkpoint",
+    "load_config",
+    "load_dir",
+    "load_step",
+    "log_gradients",
+    "logging",
+    "machine",
+    "max_num_iterations",
+    "method_name",
+    "mixed_precision",
+    "optimizers",
+    "output_dir",
+    "pipeline",
+    "project_name",
+    "relative_model_dir",
+    "save_only_latest_checkpoint",
+    "steps_per_eval_all_images"
+   ]
+  },
+  {
+   "path": "tests/data/configs/test_config2.yml",
+   "size": "6.2 KB",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "_target",
+    "data",
+    "experiment_name",
+    "load_checkpoint",
+    "load_config",
+    "load_dir",
+    "load_step",
+    "log_gradients",
+    "logging",
+    "machine",
+    "max_num_iterations",
+    "method_name",
+    "mixed_precision",
+    "optimizers",
+    "output_dir",
+    "pipeline",
+    "project_name",
+    "relative_model_dir",
+    "save_only_latest_checkpoint",
+    "steps_per_eval_all_images"
+   ]
+  },
+  {
+   "path": "tests/data/lego_test/transforms_train.json",
+   "size": "958 B",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "camera_angle_x",
+    "frames"
+   ]
+  },
+  {
+   "path": "tests/data/lego_test/transforms_val.json",
+   "size": "948 B",
+   "modified": "2025-07-31",
+   "top_keys": [
+    "camera_angle_x",
+    "frames"
+   ]
+  },
+  {
+   "path": "tests/dataparsers/test_nerfstudio_dataparser.py",
+   "size": "3.2 KB",
+   "modified": "2025-07-31",
+   "description": "Nerfstudio dataparser",
+   "defines": [
+    "mocked_dataset",
+    "test_nerfstudio_dataparser_no_filelist",
+    "test_nerfstudio_dataparser_split_filelist"
+   ]
+  },
+  {
+   "path": "tests/field_components/test_embedding.py",
+   "size": "252 B",
+   "modified": "2025-07-31",
+   "description": "Embedding tests",
+   "defines": [
+    "test_indexing"
+   ]
+  },
+  {
+   "path": "tests/field_components/test_encodings.py",
+   "size": "5.1 KB",
+   "modified": "2025-07-31",
+   "description": "Encoding Tests",
+   "defines": [
+    "test_scaling_and_offset",
+    "test_nerf_encoder",
+    "test_rff_encoder",
+    "test_tensor_vm_encoder",
+    "test_tensor_cp_encoder",
+    "test_tensor_sh_encoder",
+    "test_tensor_hash_encoder",
+    "test_kplane_encoder"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/field_components/test_field_outputs.py",
+   "size": "1.6 KB",
+   "modified": "2025-07-31",
+   "description": "Field output tests",
+   "defines": [
+    "test_field_output",
+    "test_density_output",
+    "test_rgb_output",
+    "test_sh_output"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/field_components/test_fields.py",
+   "size": "1.5 KB",
+   "modified": "2025-07-31",
+   "description": "Test the fields",
+   "defines": [
+    "test_nerfacto_field"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/field_components/test_mlp.py",
+   "size": "575 B",
+   "modified": "2025-07-31",
+   "description": "MLP Test",
+   "defines": [
+    "test_mlp"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/field_components/test_temporal_distortions.py",
+   "size": "679 B",
+   "modified": "2025-07-31",
+   "description": "Test if temporal distortions run properly",
+   "defines": [
+    "test_dnerf_distortion"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/model_components/test_losses.py",
+   "size": "609 B",
+   "modified": "2025-07-31",
+   "description": "Test losses",
+   "defines": [
+    "test_tv_loss"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/model_components/test_ray_sampler.py",
+   "size": "3.3 KB",
+   "modified": "2025-07-31",
+   "description": "Test samplers",
+   "defines": [
+    "test_uniform_sampler",
+    "test_lin_disp_sampler",
+    "test_sqrt_sampler",
+    "test_log_sampler",
+    "test_pdf_sampler"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/model_components/test_renderers.py",
+   "size": "2.4 KB",
+   "modified": "2025-07-31",
+   "description": "Test renderers",
+   "defines": [
+    "test_rgb_renderer",
+    "test_sh_renderer",
+    "test_acc_renderer",
+    "test_depth_renderer"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/pipelines/test_vanilla_pipeline.py",
+   "size": "2.8 KB",
+   "modified": "2025-07-31",
+   "description": "Test pipeline",
+   "defines": [
+    "MockedDataManager",
+    "test_load_state_dict"
+   ]
+  },
+  {
+   "path": "tests/plugins/test_registry.py",
+   "size": "6.2 KB",
+   "modified": "2025-07-31",
+   "description": "Tests for the nerfstudio.plugins.registry module.",
+   "defines": [
+    "TestConfigClass",
+    "TestConfigFunc",
+    "test_discover_methods",
+    "test_discover_methods_from_environment_variable_class",
+    "test_discover_methods_from_environment_variable_function",
+    "test_discover_methods_from_environment_variable_instance",
+    "TestDataparserConfigClass",
+    "TestDataparserConfigFunc",
+    "test_discover_dataparser",
+    "test_discover_dataparsers_from_environment_variable_class",
+    "test_discover_dataparsers_from_environment_variable_function",
+    "test_discover_dataparsers_from_environment_variable_instance"
+   ]
+  },
+  {
+   "path": "tests/process_data/test_misc.py",
+   "size": "6.4 KB",
+   "modified": "2025-07-31",
+   "description": "Test misc data utils",
+   "defines": [
+    "test_scalar_first_scalar_last_quaternions",
+    "test_process_video_conversion_with_seed"
+   ]
+  },
+  {
+   "path": "tests/process_data/test_process_images.py",
+   "size": "7.2 KB",
+   "modified": "2025-07-31",
+   "description": "Process images test",
+   "defines": [
+    "random_quaternion",
+    "test_process_images_skip_colmap",
+    "test_process_images_recursively_skip_colmap"
+   ]
+  },
+  {
+   "path": "tests/scripts/test_exporter.py",
+   "size": "3.2 KB",
+   "modified": "2025-07-31",
+   "defines": [
+    "test_export_gaussian_splat_write_ply",
+    "test_export_gaussian_splat_write_ply_mismatched_count"
+   ],
+   "runnable": true,
+   "description": "Copyright 2022 the Regents of the University of California, Nerfstudio Team and contributors. All rights reserved. Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apac…"
+  },
+  {
+   "path": "tests/utils/test_aabb_intersection.py",
+   "size": "5.2 KB",
+   "modified": "2025-07-31",
+   "description": "Test AABB intersection",
+   "defines": [
+    "test_rays_intersection_are_on_aabb_boundary",
+    "test_equall_nerfacc"
+   ]
+  },
+  {
+   "path": "tests/utils/test_poses.py",
+   "size": "2.3 KB",
+   "modified": "2025-07-31",
+   "description": "Test pose utils",
+   "defines": [
+    "test_to4x4",
+    "test_multiply",
+    "test_inverse",
+    "test_normalize"
+   ]
+  },
+  {
+   "path": "tests/utils/test_spherical_harmonics.py",
+   "size": "556 B",
+   "modified": "2025-07-31",
+   "defines": [
+    "test_spherical_harmonics"
+   ]
+  },
+  {
+   "path": "tests/utils/test_tensor_dataclass.py",
+   "size": "6.2 KB",
+   "modified": "2025-07-31",
+   "description": "Test tensor dataclass",
+   "defines": [
+    "DummyNestedClass",
+    "DummyTensorDataclass",
+    "test_init",
+    "test_broadcasting",
+    "test_tensor_ops",
+    "test_nested_class",
+    "test_iter",
+    "test_non_tensor"
+   ],
+   "runnable": true
+  },
+  {
+   "path": "tests/utils/test_visualization.py",
+   "size": "1.7 KB",
+   "modified": "2025-07-31",
+   "description": "Test colormaps",
+   "defines": [
+    "test_apply_colormap",
+    "test_apply_depth_colormap",
+    "test_apply_boolean_colormap",
+    "test_cube_center",
+    "test_aabb_center"
+   ]
+  }
+ ],
+ "file_groups": [
+  {
+   "path": "docs/_static/imgs/",
+   "extension": "data",
+   "files": 9,
+   "extensions": {
+    ".png": 9
+   },
+   "size": "387.8 KB"
+  },
+  {
+   "path": "docs/extensions/imgs/",
+   "extension": "data",
+   "files": 4,
+   "extensions": {
+    ".png": 3,
+    ".svg": 1
+   },
+   "size": "3.9 MB"
+  },
+  {
+   "path": "docs/nerfology/model_components/imgs/",
+   "extension": "data",
+   "files": 6,
+   "extensions": {
+    ".png": 6
+   },
+   "size": "218.1 KB"
+  },
+  {
+   "path": "docs/quickstart/imgs/",
+   "extension": "data",
+   "files": 12,
+   "extensions": {
+    ".png": 11,
+    ".jpg": 1
+   },
+   "size": "8.4 MB"
+  },
+  {
+   "path": "nerfstudio/scripts/completions/bash/",
+   "extension": "data",
+   "files": 10,
+   "extensions": {
+    "(none)": 10
+   },
+   "size": "557.5 KB"
+  }
+ ],
+ "data_dirs": [
+  {
+   "path": "docs/developer_guides/",
+   "files": 29,
+   "size": "304.4 KB",
+   "extensions": {
+    ".md": 14,
+    ".png": 13,
+    ".rst": 2
+   },
+   "sample": [
+    "config.md",
+    "new_methods.md",
+    "debugging_tools/benchmarking.md",
+    "debugging_tools/index.rst"
+   ]
+  },
+  {
+   "path": "docs/reference/",
+   "files": 38,
+   "size": "17.7 KB",
+   "extensions": {
+    ".rst": 28,
+    ".md": 10
+   },
+   "sample": [
+    "contributing.md",
+    "api/cameras.rst",
+    "api/config.rst",
+    "api/fields.rst"
+   ]
+  },
+  {
+   "path": "docs/nerfology/methods/",
+   "files": 45,
+   "size": "1.6 MB",
+   "extensions": {
+    ".md": 24,
+    ".png": 21
+   },
+   "sample": [
+    "bionerf.md",
+    "feature_splatting.md",
+    "generfacto.md",
+    "igs2gs.md"
+   ]
+  }
+ ],
+ "skipped_dirs": [
+  {
+   "path": ".git/",
+   "files": 178
+  },
+  {
+   "path": ".vscode/",
+   "files": 3
+  },
+  {
+   "path": "nerfstudio/__pycache__/",
+   "files": 1
+  },
+  {
+   "path": "nerfstudio/cameras/__pycache__/",
+   "files": 7
+  },
+  {
+   "path": "nerfstudio/clustering/__pycache__/",
+   "files": 5
+  },
+  {
+   "path": "nerfstudio/configs/__pycache__/",
+   "files": 7
+  },
+  {
+   "path": "nerfstudio/data/__pycache__/",
+   "files": 3
+  },
+  {
+   "path": "nerfstudio/data/datamanagers/__pycache__/",
+   "files": 7
+  },
+  {
+   "path": "nerfstudio/data/dataparsers/__pycache__/",
+   "files": 18
+  },
+  {
+   "path": "nerfstudio/data/datasets/__pycache__/",
+   "files": 6
+  },
+  {
+   "path": "nerfstudio/data/utils/__pycache__/",
+   "files": 8
+  },
+  {
+   "path": "nerfstudio/engine/__pycache__/",
+   "files": 5
+  },
+  {
+   "path": "nerfstudio/exporter/__pycache__/",
+   "files": 5
+  },
+  {
+   "path": "nerfstudio/field_components/__pycache__/",
+   "files": 9
+  },
+  {
+   "path": "nerfstudio/fields/__pycache__/",
+   "files": 12
+  },
+  {
+   "path": "nerfstudio/generative/__pycache__/",
+   "files": 4
+  },
+  {
+   "path": "nerfstudio/model_components/__pycache__/",
+   "files": 10
+  },
+  {
+   "path": "nerfstudio/models/__pycache__/",
+   "files": 16
+  },
+  {
+   "path": "nerfstudio/pipelines/__pycache__/",
+   "files": 4
+  },
+  {
+   "path": "nerfstudio/plugins/__pycache__/",
+   "files": 4
+  },
+  {
+   "path": "nerfstudio/process_data/__pycache__/",
+   "files": 14
+  },
+  {
+   "path": "nerfstudio/scripts/__pycache__/",
+   "files": 9
+  },
+  {
+   "path": "nerfstudio/scripts/blender/__pycache__/",
+   "files": 2
+  },
+  {
+   "path": "nerfstudio/scripts/completions/__pycache__/",
+   "files": 2
+  },
+  {
+   "path": "nerfstudio/scripts/datasets/__pycache__/",
+   "files": 2
+  },
+  {
+   "path": "nerfstudio/scripts/docs/__pycache__/",
+   "files": 3
+  },
+  {
+   "path": "nerfstudio/scripts/downloads/__pycache__/",
+   "files": 4
+  },
+  {
+   "path": "nerfstudio/scripts/github/__pycache__/",
+   "files": 2
+  },
+  {
+   "path": "nerfstudio/scripts/maya/__pycache__/",
+   "files": 1
+  },
+  {
+   "path": "nerfstudio/scripts/viewer/__pycache__/",
+   "files": 3
+  },
+  {
+   "path": "nerfstudio/utils/__pycache__/",
+   "files": 21
+  },
+  {
+   "path": "nerfstudio/viewer/__pycache__/",
+   "files": 8
+  },
+  {
+   "path": "nerfstudio/viewer/server/__pycache__/",
+   "files": 2
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/__pycache__/",
+   "files": 1
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/app/__pycache__/",
+   "files": 1
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/__pycache__/",
+   "files": 9
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/server/state/__pycache__/",
+   "files": 2
+  },
+  {
+   "path": "nerfstudio/viewer_legacy/viser/__pycache__/",
+   "files": 5
+  }
+ ]
+}
